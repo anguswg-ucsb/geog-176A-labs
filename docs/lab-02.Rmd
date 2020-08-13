@@ -1,0 +1,10 @@
+---
+title: "Geography 176A"
+author: "[Angus Watters](https://github.com/anguswg-ucsb)"
+subtitle: 'Lab 2 COVID-19 Pandemic'
+output:
+  html_document:
+    theme: journal
+---
+
+
