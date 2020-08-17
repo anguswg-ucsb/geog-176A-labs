@@ -6,7 +6,7 @@ navbar:
   left:
     - text: "Lab 1"
     - text: "Lab 2"
-      href: ../docs/lab-02.html
+      href: lab-02.html
     - text: "Lab 3"
 
 output:
