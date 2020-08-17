@@ -1,8 +1,8 @@
 ---
 name: "Geography 176A - Labs"
+output_dir: '.'
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
 subtitle: 'Lab 2 COVID-19 Pandemic'
-output_dir: '.'
 navbar:
   title: "Labs"
   left:
