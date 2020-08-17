@@ -1,6 +1,6 @@
 ---
 name: "Geography 176A - Labs"
-output_dir: '.'
+output_dir: 'docs'
 navbar:
   title: "Labs"
   left:
