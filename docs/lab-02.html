@@ -384,50 +384,22 @@ summary {
 <div id="question-1" class="section level1">
 <h1>Question 1:</h1>
 <p>The 5 counties with most cumulative cases are shown in the table below.</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ tidyverse 1.3.0 --</code></pre>
-<pre><code>## v ggplot2 3.3.2     v purrr   0.3.4
-## v tibble  3.0.3     v dplyr   1.0.1
-## v tidyr   1.1.1     v stringr 1.4.0
-## v readr   1.3.1     v forcats 0.5.0</code></pre>
-<pre><code>## -- Conflicts --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>library(knitr)
+<pre class="r"><code>library(tidyverse)
+library(knitr)
 library(readxl)
-library(zoo)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;zoo&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     as.Date, as.Date.numeric</code></pre>
-<pre class="r"><code>library(ggthemes)
-library(scales)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;scales&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:purrr&#39;:
-## 
-##     discard</code></pre>
-<pre><code>## The following object is masked from &#39;package:readr&#39;:
-## 
-##     col_factor</code></pre>
-<pre class="r"><code>pop = read_excel(&#39;../data/PopulationEstimates.xls&#39;, skip = 2) %&gt;%
+library(zoo)
+library(ggthemes)
+library(scales)
+
+pop = read_excel(&#39;../data/PopulationEstimates.xls&#39;, skip = 2) %&gt;%
   select(pop2019 = POP_ESTIMATE_2019, fips = FIPStxt)
 
 
 covid_url = &#39;https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv&#39;
 
-covid = read_csv(covid_url)</code></pre>
-<pre><code>## Parsed with column specification:
-## cols(
-##   date = col_date(format = &quot;&quot;),
-##   county = col_character(),
-##   state = col_character(),
-##   fips = col_character(),
-##   cases = col_double(),
-##   deaths = col_double()
-## )</code></pre>
-<pre class="r"><code>state_1 = &#39;California&#39;</code></pre>
+covid = read_csv(covid_url)
+
+state_1 = &#39;California&#39;</code></pre>
 </div>
 <div id="question-1-1" class="section level1">
 <h1>Question 1:</h1>
@@ -441,9 +413,9 @@ covid = read_csv(covid_url)</code></pre>
   summarise(cases = sum(cases, na.rm = TRUE)) %&gt;%
   ungroup() %&gt;%
   arrange(-cases) %&gt;%
-  slice_max(cases, n = 5)</code></pre>
-<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
-<pre class="r"><code>knitr::kable(mostCases, caption = paste(state_1, &#39;counties with the most cumulative cases&#39;), col.names = c(&#39;County&#39;, &#39;Cases&#39;))</code></pre>
+  slice_max(cases, n = 5)
+
+knitr::kable(mostCases, caption = paste(state_1, &#39;counties with the most cumulative cases&#39;), col.names = c(&#39;County&#39;, &#39;Cases&#39;))</code></pre>
 <table>
 <caption>California counties with the most cumulative cases</caption>
 <thead>
@@ -481,9 +453,9 @@ covid = read_csv(covid_url)</code></pre>
   group_by(county) %&gt;%
   summarise(new_cases = sum(new_cases, na.rm = TRUE)) %&gt;%
   arrange(-new_cases) %&gt;%
-  slice_max(new_cases, n = 5)</code></pre>
-<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
-<pre class="r"><code>knitr::kable(mostNewCases, caption = paste(state_1, &#39;counties with the most new cases&#39;),
+  slice_max(new_cases, n = 5)
+
+knitr::kable(mostNewCases, caption = paste(state_1, &#39;counties with the most new cases&#39;),
              col.names = c(&#39;County&#39;, &#39;New Cases&#39;))</code></pre>
 <table>
 <caption>California counties with the most new cases</caption>
@@ -524,16 +496,16 @@ covid = read_csv(covid_url)</code></pre>
   ungroup() %&gt;%
   mutate(casePer100 = new_cases / (pop2019 / 100000)) %&gt;%
   filter(casePer100 &lt;= 100) %&gt;%
-  pull(county) </code></pre>
-<pre><code>## `summarise()` regrouping output by &#39;county&#39; (override with `.groups` argument)</code></pre>
-<pre class="r"><code>last14days</code></pre>
+  pull(county) 
+
+last14days</code></pre>
 <pre><code>##  [1] &quot;Alpine&quot;    &quot;Del Norte&quot; &quot;El Dorado&quot; &quot;Humboldt&quot;  &quot;Mariposa&quot;  &quot;Modoc&quot;    
 ##  [7] &quot;Mono&quot;      &quot;Nevada&quot;    &quot;Plumas&quot;    &quot;Shasta&quot;    &quot;Siskiyou&quot;  &quot;Trinity&quot;  
 ## [13] &quot;Tuolumne&quot;</code></pre>
-<pre class="r"><code>knitr::kable(last14days, caption = paste(state_1, &#39;counties with the most new cases&#39;),
+<pre class="r"><code>knitr::kable(last14days, caption = paste(&#39;Safe counties in&#39;, state_1),
              col.names = c(&#39;County&#39;))</code></pre>
 <table>
-<caption>California counties with the most new cases</caption>
+<caption>Safe counties in California</caption>
 <thead>
 <tr class="header">
 <th align="left">County</th>

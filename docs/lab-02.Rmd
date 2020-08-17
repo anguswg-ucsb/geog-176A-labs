@@ -9,7 +9,7 @@ output:
 
 # Question 1:
 The 5 counties with most cumulative cases are shown in the table below.
-```{r, warning = FALSE}
+```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(knitr)
 library(readxl)
@@ -28,7 +28,7 @@ covid = read_csv(covid_url)
 state_1 = 'California'
 ```
 # Question 1:
-```{r, warning = FALSE }
+```{r, message = FALSE, warning = FALSE }
 newData = inner_join(pop, covid, by = 'fips') %>%
   filter(state == state_1) %>%
   group_by(county) %>%
@@ -36,7 +36,7 @@ newData = inner_join(pop, covid, by = 'fips') %>%
 ```
 
 The 5 counties with the most cases is shown below.
-```{r, warning = FALSE}
+```{r, message = FALSE, warning = FALSE}
 mostCases = newData %>%
   group_by(county) %>%
   summarise(cases = sum(cases, na.rm = TRUE)) %>%
@@ -48,7 +48,7 @@ knitr::kable(mostCases, caption = paste(state_1, 'counties with the most cumulat
 
 ```
 The counties with the most new cases is shown below.
-```{r,  warning = FALSE}
+```{r, message = FALSE, warning = FALSE}
 mostNewCases = newData %>%
   select(county, new_cases) %>%
   group_by(county) %>%
@@ -63,7 +63,7 @@ knitr::kable(mostNewCases, caption = paste(state_1, 'counties with the most new 
 
 
 The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. There are 13 counties determined to be safe by this criteria. The 14 safe counties are:
-```{r, message = TRUE, warning = FALSE} 
+```{r, message = FALSE, warning = FALSE} 
 last14days = newData %>%
   filter(date > max(date) - 13) %>%
   group_by(county, pop2019) %>%
@@ -75,7 +75,7 @@ last14days = newData %>%
 
 last14days
 
-knitr::kable(last14days, caption = paste(state_1, 'counties with the most new cases'),
+knitr::kable(last14days, caption = paste('Safe counties in', state_1),
              col.names = c('County'))
 ``` 
 
