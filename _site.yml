@@ -4,10 +4,8 @@ output_dir: 'docs'
 navbar:
   title: "Labs"
   left:
-    - text: "Lab 1"
     - text: "Lab 2"
       href: lab-02.html
-    - text: "Lab 3"
 
 output:
   html_document:
