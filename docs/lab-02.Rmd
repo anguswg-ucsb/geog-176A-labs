@@ -1,6 +1,6 @@
 ---
 title: "Geography 176A"
-author: "[Angus Watters](https://github.com/anguswg-ucsb)"
+author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
 subtitle: 'Lab 2 COVID-19 Pandemic'
 output:
   html_document:
