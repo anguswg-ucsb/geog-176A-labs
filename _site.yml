@@ -1,0 +1,17 @@
+---
+name: "Geography 176A - Labs"
+author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
+subtitle: 'Lab 2 COVID-19 Pandemic'
+output_dir: '.'
+navbar:
+  title: "Labs"
+  left:
+    - text: "Lab 1"
+    - text: "Lab 2"
+      href: docs/lab-02.html
+    - text: "Lab 3"
+
+output:
+  html_document:
+    theme: darkly
+---
