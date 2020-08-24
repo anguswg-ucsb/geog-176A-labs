@@ -11,3 +11,11 @@ output:
   html_document:
     theme: darkly
 ---
+---
+title: "Geography 176A"
+author: "[Mike Johnson](https://mikejohnson51.github.io)"
+subtitle: 'Lab 03: Distances and the Border Zone'
+output:
+  html_document:
+    theme: journal
+---

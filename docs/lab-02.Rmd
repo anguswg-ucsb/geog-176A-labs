@@ -1,11 +1,5 @@
----
-title: "Geography 176A"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
 subtitle: 'Lab 2 COVID-19 Pandemic'
-output:
-  html_document:
-    theme: journal
----
 
 # Question 1:
 The 5 counties with most cumulative cases are shown in the table below.
