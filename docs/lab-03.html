@@ -762,16 +762,26 @@ equidist_ggplot = ggplot() +
 <h1>Question 4:</h1>
 <div id="quantifing-border-zone" class="section level2">
 <h2>4.1 Quantifing Border Zone</h2>
-<pre class="r"><code># table of number cities in border zone, border pop, percentage total pop
+<pre class="r"><code>#cities within 160 km of border
+border_zone = cities %&gt;%
+  st_as_sf(coords = c(&#39;lng&#39;, &#39;lat&#39;), crs = 4326) %&gt;%
+  mutate(dist_to_border = st_distance(cities, conus_u), dist_to_border = set_units(dist_to_border, &#39;km&#39;), dist_to_border = drop_units(dist_to_border)) %&gt;%
+  filter(dist_to_border &lt;= 160) %&gt;%
+  select(city, state_name, dist_to_border, population)
+
+# table of number cities in border zone, border pop, percentage total pop
 border_zone_stats = cities %&gt;%
   st_drop_geometry() %&gt;%
   mutate(total_pop = sum(population)) %&gt;%
   mutate(cities_zone = st_distance(cities, conus_u), cities_zone = set_units(cities_zone, &#39;km&#39;), cities_zone = drop_units(cities_zone)) %&gt;%
   filter(cities_zone &lt;= 160) %&gt;%
   summarise(border_pop = sum(population), border_pop_percentage = (border_pop/total_pop)*100, num_cities = n()) %&gt;%
-  head(1)
-
-knitr::kable(border_zone_stats, caption = &#39;Quantifing the Border Zone&#39;, col.names = c(&#39;Border zone population&#39;, &#39;Percent of US population&#39;, &#39;Total cities&#39;))</code></pre>
+  head(1)</code></pre>
+</div>
+<div id="comparison-with-aclu-figures" class="section level2">
+<h2>Comparison with ACLU figures:</h2>
+<p>The values in the table below match the values given by the ACLU for the border zone population, the percentage of the total US population, and the number of border zone cities.</p>
+<pre class="r"><code>knitr::kable(border_zone_stats, caption = &#39;Quantifing the Border Zone&#39;, col.names = c(&#39;Border zone population&#39;, &#39;Percent of US population&#39;, &#39;Total cities&#39;))</code></pre>
 <table>
 <caption>Quantifing the Border Zone</caption>
 <thead>
@@ -789,16 +799,6 @@ knitr::kable(border_zone_stats, caption = &#39;Quantifing the Border Zone&#39;, 
 </tr>
 </tbody>
 </table>
-</div>
-<div id="comparison-with-aclu-figures" class="section level2">
-<h2>Comparison with ACLU figures:</h2>
-<p>The values I found match the values given by the ACLU for the border zone population, the percentage of the total US population, and the number of border zone cities.</p>
-<pre class="r"><code>#cities within 160 km of border
-border_zone = cities %&gt;%
-  st_as_sf(coords = c(&#39;lng&#39;, &#39;lat&#39;), crs = 4326) %&gt;%
-  mutate(dist_to_border = st_distance(cities, conus_u), dist_to_border = set_units(dist_to_border, &#39;km&#39;), dist_to_border = drop_units(dist_to_border)) %&gt;%
-  filter(dist_to_border &lt;= 160) %&gt;%
-  select(city, state_name, dist_to_border, population)</code></pre>
 </div>
 <div id="mapping-border-zone" class="section level2">
 <h2>4.2 Mapping Border Zone</h2>

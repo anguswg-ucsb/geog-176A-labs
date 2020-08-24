@@ -252,6 +252,12 @@ equidist_ggplot = ggplot() +
 
 ## 4.1 Quantifing Border Zone
 ```{r, message = FALSE, warning = FALSE}
+#cities within 160 km of border
+border_zone = cities %>%
+  st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
+  mutate(dist_to_border = st_distance(cities, conus_u), dist_to_border = set_units(dist_to_border, 'km'), dist_to_border = drop_units(dist_to_border)) %>%
+  filter(dist_to_border <= 160) %>%
+  select(city, state_name, dist_to_border, population)
 
 # table of number cities in border zone, border pop, percentage total pop
 border_zone_stats = cities %>%
@@ -261,22 +267,14 @@ border_zone_stats = cities %>%
   filter(cities_zone <= 160) %>%
   summarise(border_pop = sum(population), border_pop_percentage = (border_pop/total_pop)*100, num_cities = n()) %>%
   head(1)
+```
+## Comparison with ACLU figures:
+The values in the table below match the values given by the ACLU for the border zone population, the percentage of the total US population, and the number of border zone cities.
 
+```{r, message = FALSE, warning = FALSE}
 knitr::kable(border_zone_stats, caption = 'Quantifing the Border Zone', col.names = c('Border zone population', 'Percent of US population', 'Total cities'))
 ```
 
-## Comparison with ACLU figures:
-The values I found match the values given by the ACLU for the border zone population, the percentage of the total US population, and the number of border zone cities.
-
-
-```{r, message = FALSE, warning = FALSE}
-#cities within 160 km of border
-border_zone = cities %>%
-  st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
-  mutate(dist_to_border = st_distance(cities, conus_u), dist_to_border = set_units(dist_to_border, 'km'), dist_to_border = drop_units(dist_to_border)) %>%
-  filter(dist_to_border <= 160) %>%
-  select(city, state_name, dist_to_border, population)
-```
 
 ## 4.2 Mapping Border Zone
 ```{r, message = FALSE, warning = FALSE}
