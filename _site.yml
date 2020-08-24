@@ -1,19 +1,6 @@
 ---
-name: "Geography 176A - Labs"
-output_dir: 'docs'
-navbar:
-  title: "Labs"
-  left:
-    - text: "Lab 2"
-      href: lab-02.html
-
-output:
-  html_document:
-    theme: darkly
----
----
 title: "Geography 176A"
-author: "[Mike Johnson](https://mikejohnson51.github.io)"
+author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
 subtitle: 'Lab 03: Distances and the Border Zone'
 output:
   html_document:
