@@ -83,7 +83,7 @@ length(last14days)
 
 
 fourStates = covid %>%
-  filter(state %in% c('California', 'New York', 'Louisiana', 'Florida')) %>%
+  filter(state %in% c('California', 'New York', 'Washington', 'Florida')) %>%
   group_by(state, date) %>%
   summarise(cases = sum(cases, na.rm = TRUE)) %>%
   ungroup() %>%
@@ -157,12 +157,6 @@ covidCenters = inner_join(centers, covid, by = 'county') %>%
   group_by(date, county) %>%
   summarise(sumX = sum(LON), sumY = sum(LAT), cases = sum(cases),
             weightMeanCenter = weighted.mean(sumX, sumY, cases))
-
-
-weighted_mean_center_ggplot = ggplot(data = weightMeanCenter, aes(x = LON, y = LAT), +
-         geom_point(color = 'blue')
-
-weighted_mean_center_ggplot
 
 
 

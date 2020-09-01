@@ -28,8 +28,8 @@ conus = us_states() %>%
   st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
   filter(!name %in% c('Puerto Rico', 'Alaska', 'Hawaii'))
 
-
-
+us_cities
+plot(conus)
 # 1.3 - Get country boundaries for Mexico, the United States of America, and Canada
 country = countries110 %>%
   st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
@@ -65,7 +65,7 @@ cities_b = cities %>%
   select(city, state_name, dist_border) %>%
   arrange(-dist_border)
 
-knitr::kable(cities_b_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to border'))
+#knitr::kable(cities_b_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to border'))
 
 # 5 citiest furthest from US bordern geometry dropped
 cities_b_five_nogeom = cities_b %>%
