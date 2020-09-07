@@ -231,7 +231,7 @@ Uncertainty = sum(final)
 
 # plot flood map
 Uncertainty[is.na(Uncertainty)] = 0
-mapview(Uncertainty)
+mapview(Uncertainty, col = RColorBrewer::brewer.pal(blues9, 'Spectral'))
 ```
 
 

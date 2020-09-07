@@ -196,7 +196,7 @@ Uncertainty = sum(final)
 # plot flood map
 Uncertainty[is.na(Uncertainty)] = 0
 mapview(Uncertainty)
-
+mapview(Uncertainty, col = RColorBrewer::brewer.pal(blues9, 'Spectral'))
 ## Why are some cell values not an even number?
 
 # Some of the cells have odd values of 1, 3, and 5. In the case of a value of 1, this means that only 1 method identified an area as flooded.
