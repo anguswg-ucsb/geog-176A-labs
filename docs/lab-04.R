@@ -157,8 +157,6 @@ tess_summary = bind_rows(
 
 
 
-?mean()
-
 knitr::kable(tess_summary, caption = 'US county tesselations ', col.names = c('Tesselation', 'Number of features', 'Mean area', 'Standard deviation', 'Total area'))
 
 # Step 2.5
@@ -178,9 +176,7 @@ dams_sf = dams %>%
 
 # Step 3.2
 
-#points = dams_sf
-#polygon = sq_grid
-#bar = "id"
+
 
 pip_function = function(points, polygon, bar){
   st_join(polygon, points) %>%
@@ -196,9 +192,6 @@ dams_tri = pip_function(dams_sf, tri, 'id')
 dams_sq = pip_function(dams_sf, sq_grid, 'id')
 dams_hex = pip_function(dams_sf, hex_grid, 'id')
 dams_county = pip_function(dams_sf, counties, 'id')
-
-dams_sq$geometry %>%
-  plot()
 
 
 # Step 3.4
@@ -223,21 +216,18 @@ plot_pip = function(data, text){
 # Step 3.5
 
 voroni_dam_plot = plot_pip(dams_voroni, 'US dams - Voroni tessellation')
-ggsave(voroni_dam_plot, file = 'img/voroni-dam-plot.png')
+
 
 tri_dam_plot = plot_pip(dams_tri, 'US dams - Triangulation tessellation')
-ggsave(tri_dam_plot, file = 'img/tri-dam-plot.png')
 
 
 sq_dam_plot = plot_pip(dams_sq, 'US dams - Square grid Tessellation')
-ggsave(sq_dam_plot, file = 'img/sq-dam-plot.png')
 
 hex_dam_plot = plot_pip(dams_hex, 'US dams - Hexagonal Tessellation')
-ggsave(hex_dam_plot, file = 'img/hex-dam-plot.png')
+
 
 
 county_dam_plot = plot_pip(dams_county, 'US dams - County lines')
-ggsave(county_dam_plot, file = 'img/county-dam-plot.png')
 
 # Step 3.6
 ?read_excel()
@@ -276,10 +266,11 @@ hydroelec_dams = pip_function(dams_sf[grepl("H",  dams_sf$PURPOSES),], voroni, '
 
 # Step 4.2
 
-plot_pip2 = function(data, text){
+plot_pip2 = function(data1, data, text){
   ggplot() +
     geom_sf(data = data, aes(fill = n), alpha = .9, size = .2) +
     gghighlight(n > mean(n) + sd(n)) +
+    geom_sf(data = data1, aes(fill = n), alpha = .9, size = .2) +
     viridis::scale_fill_viridis() +
     theme_void() +
     theme(plot.title = element_text(face = "bold", color = "black", size = 24), plot.subtitle = element_text(size = 12),
@@ -292,23 +283,21 @@ plot_pip2 = function(data, text){
     theme(aspect.ratio = .5)
 }
 
-rec_dams_plot = plot_pip2(rec_dams, 'Recreational Dams')
-ggsave(rec_dams_plot, file = 'img/rec-dams-usa.png')
+rec_dams_plot = plot_pip2(dams_voroni, rec_dams, 'Recreational Dams')
 
 flood_control_dams_plot = plot_pip2(flood_control_dams, "Flood control dams")
-ggsave(flood_control_dams_plot, file = 'img/flood-control-dams-usa.png')
 
 fire_protect_dams_plot = plot_pip2(fire_dams, "Fire protection dams")
-ggsave(fire_protect_dams_plot, file = 'img/fire-protection-dams-usa.png')
+
 
 water_supply_dams_plot = plot_pip2(water_sup_dams, "Water supply dams")
-ggsave(water_supply_dams_plot, file = 'img/water-supply-dams-usa.png')
+
 
 irrigation_dams_plot = plot_pip2(irrig_dams, "Irrigation dams")
-ggsave(irrigation_dams_plot, file = 'img/irrigation-dams-usa.png')
 
-hydroelectric_dams_plot = plot_pip2(hydroelec_dams, "Hydroelectric dams")
-ggsave(hydroelectric_dams_plot, file = 'img/hydroelectric-dams-usa.png')
+
+hydroelectric_dams_plot = plot_pip2(dams_voroni, hydroelec_dams, "Hydroelectric dams")
+
 
 
 # Step 4.3
