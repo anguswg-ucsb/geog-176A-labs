@@ -7,7 +7,7 @@ output:
   theme: journal
 ---
 
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 library(knitr)
 library(units)
 library(readxl)
@@ -23,7 +23,7 @@ library(osmdata)
 
 
 # Question 1:
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 bb = read_csv('../data/uscities.csv') %>%
   filter(city == 'Palo') %>%
   st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
@@ -38,7 +38,7 @@ bb = read_csv('../data/uscities.csv') %>%
 # Question 2:
 
 # Step 1
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 scenes = lsat_scenes()
 
 bb_wgs = st_transform(bb, 4326) %>%  st_bbox()
@@ -51,7 +51,7 @@ down = scenes %>%
 write.csv(down, file = '../data/palo-flood.csv', row.names = FALSE)
 ```
 # Step 2
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 meta = read_csv('../data/palo-flood.csv')
 
 files = lsat_scene_files(meta$download_url) %>%
@@ -62,7 +62,7 @@ files = lsat_scene_files(meta$download_url) %>%
 
 
 # Step 3
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 st = sapply(files, lsat_image)
 
 s = stack(st) %>%
@@ -75,7 +75,7 @@ s = stack(st) %>%
 ### The cell resolution of the image stack is x = 30 and y = 30.
 
 # Step 4
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 cropper = bb %>% st_as_sf() %>%
   st_transform(crs(s))
 
@@ -90,7 +90,7 @@ r = crop(s, cropper)
 # Question 3:
 
 # Step 1
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 nat_col = plotRGB(r, r = 4, g = 3, b = 2)
 inf_NIR = plotRGB(r, r = 5, g = 4, b = 3, stretch = 'lin')
 false_SWIR = plotRGB(r, r = 5, g = 6, b = 4, stretch = 'hist')
@@ -105,7 +105,7 @@ false_agr = plotRGB(r, r = 6, g = 5, b = 2, stretch = 'hist')
 
 # Question 4:
 # Step 1
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # NVDI
 x = (r$NIR - r$Red)/ (r$NIR + r$Red)
 
@@ -153,7 +153,7 @@ swi = calc(b, swi_func)
 ```
 
 # Step 2
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 water_features_stack = stack(ndvi, ndwi, mndwi, wri, swi) %>%
   setNames(c('NDVI', 'NDWI', 'MNDWI', 'WRI', 'SWI'))
 plot(water_features_stack, col = "blue")
@@ -167,19 +167,19 @@ plot(water_features_stack, col = "blue")
 # Question 5:
 
 # Step 1
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 set.seed(09052020)
 ```
 
 
 # Step 2
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 v = getValues(r)
 dim(v)
 ```
 ## Dimensions:
 ## The dimensions of the extracted values from the 6 band raster stack are 117640, 6 which means there are 117640 cells and 6 layers in the raster.
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 idx = which(!is.na(v))
 v = na.omit(v)
 
@@ -192,7 +192,7 @@ new_raster[idx] = E$cluster
 
 # Step 3
 ### Tables of binary flood masks vs. kmeans_raster
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 tab_ndvi = table(values(ndvi), values(new_raster))
 tab_ndwi = table(values(ndwi), values(new_raster))
 tab_mndwi = table(values(mndwi), values(new_raster))
@@ -211,7 +211,7 @@ final[is.na(final)] = 0
 # Question 6:
 
 # Step 1
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # Calculate total area of the flooded cells in each image
 area_ndvi = (cellStats(ndvi, 'sum') * 900)
 area_ndwi = (cellStats(ndwi, 'sum') * 900)
@@ -225,7 +225,7 @@ area_df = data.frame(img_band = c('NDVI', 'NDWI', 'MNDWI', 'WRI', 'SWI', 'k-mean
 kable(area_df, caption = 'Total Flooded Area' , col.names = c('Image band', 'Area(m$^{2}$)'))
 ```
 # Step 2
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # Uncertainty
 Uncertainty = sum(final)
 

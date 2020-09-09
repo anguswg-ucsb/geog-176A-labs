@@ -6,7 +6,7 @@ output:
   html_document:
   theme: journal
 ---
-```{r}
+```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(readxl)
 library(ggthemes)
