@@ -1,9 +1,14 @@
+---
+title: "Geography 176A"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
-subtitle: 'Lab 2 COVID-19 Pandemic'
+subtitle: 'Lab 02: COVID-19 Pandemic'
+output:
+  html_document:
+    theme: journal
+---
 
-# Question 1:
-The 5 counties with most cumulative cases are shown in the table below.
 ```{r, message = FALSE, warning = FALSE}
+# Libraries
 library(tidyverse)
 library(knitr)
 library(readxl)
@@ -11,26 +16,28 @@ library(zoo)
 library(ggthemes)
 library(scales)
 
+# US population estimates
 pop = read_excel('../data/PopulationEstimates.xls', skip = 2) %>%
   select(pop2019 = POP_ESTIMATE_2019, fips = FIPStxt)
 
-
+# NY Times COVID-19 data
 covid_url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
-
 covid = read_csv(covid_url)
 
+# State of interest
 state_1 = 'California'
 ```
-# Question 1:
-```{r, message = FALSE, warning = FALSE }
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 newData = inner_join(pop, covid, by = 'fips') %>%
   filter(state == state_1) %>%
   group_by(county) %>%
   mutate(new_cases = cases - lag(cases))
 ```
 
-The 5 counties with the most cases is shown below.
-```{r, message = FALSE, warning = FALSE}
+### The 5 counties with most cumulative cases are shown in the table below.
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 mostCases = newData %>%
   group_by(county) %>%
   summarise(cases = sum(cases, na.rm = TRUE)) %>%
@@ -38,48 +45,69 @@ mostCases = newData %>%
   arrange(-cases) %>%
   slice_max(cases, n = 5)
 
-knitr::kable(mostCases, caption = paste(state_1, 'counties with the most cumulative cases'), col.names = c('County', 'Cases'))
+knitr::kable(mostCases,
+             col.names = c('County', 'Cases'))
+```
+
+
+### The 5 counties with the most cases is shown below.
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+knitr::kable(mostCases, col.names = c('County', 'Cases'))
 
 ```
-The counties with the most new cases is shown below.
-```{r, message = FALSE, warning = FALSE}
+
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 mostNewCases = newData %>%
   select(county, new_cases) %>%
   group_by(county) %>%
   summarise(new_cases = sum(new_cases, na.rm = TRUE)) %>%
   arrange(-new_cases) %>%
   slice_max(new_cases, n = 5)
+```
 
-knitr::kable(mostNewCases, caption = paste(state_1, 'counties with the most new cases'),
+### The counties with the most new cases is shown below.
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+knitr::kable(mostNewCases,
              col.names = c('County', 'New Cases'))
 ```
 
 
 
-The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. There are 13 counties determined to be safe by this criteria. The 14 safe counties are:
-```{r, message = FALSE, warning = FALSE} 
+
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, results = 'hide'} 
 last14days = newData %>%
   filter(date > max(date) - 13) %>%
   group_by(county, pop2019) %>%
   summarise(new_cases = sum(new_cases)) %>%
   ungroup() %>%
   mutate(casePer100 = new_cases / (pop2019 / 100000)) %>%
-  filter(casePer100 <= 100) %>%
-  pull(county) 
+  filter(casePer100 <= 100) %>% 
+  pull(county)
 
 last14days
+```
 
-knitr::kable(last14days, caption = paste('Safe counties in', state_1),
+## Safe counties in California:
+### The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. Below are the safe counties based on this criteria.
+
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE} 
+knitr::kable(last14days,
              col.names = c('County'))
 ``` 
 
-# Question 2:
 
 ![](../img/daily-new-cases-in-fourStates.png)
 
 ![](../img/daily-new-cases-per-capita-in-fourStates.png)
 
-In the second plot we scaled for population and you can that although California has a large number of new cases, the number of new cases per capita is lower compared to Florida and Louisiana which are experiencing a large number of new cases with respect to population.  
+## Analysis:
+
+### In the second plot we scaled for population and you can that although California has a large number of new cases, the number of new cases per capita is lower compared to Florida and Louisiana which are experiencing a large number of new cases with respect to population.  
 
 
 
