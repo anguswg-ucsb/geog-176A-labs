@@ -7,14 +7,8 @@ output:
     theme: journal
 ---
 
-# Lab 03: Distances and the Border Zone
 ```{r, message = FALSE, warning = FALSE}
-
-
-# Lab 03: Distances and the Border Zone
-## Author: Angus Watters
-# Question 1:
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
+# Libraries
 library(tidyverse)
 library(sf)
 library(units)
@@ -24,45 +18,35 @@ library(gghighlight)
 library(ggrepel)
 library(knitr)
 ```
+![](../img/10-most-pop-US-cities.png)
 
-#Question 1:
+
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # 1.1 Define a Projection
 
 eqdc = '+proj=eqdc +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs'
 
-
 # 1.2 - Get USA state boundaries
 conus = us_states() %>%
   st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
   filter(!name %in% c('Puerto Rico', 'Alaska', 'Hawaii'))
-
-
 
 # 1.3 - Get country boundaries for Mexico, the United States of America, and Canada
 country = countries110 %>%
   st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
   filter(admin %in% c('Mexico', 'United States of America', 'Canada'))
 
-
-
 # 1.4 - Get city locations from the CSV file
 cities = read_csv('../data/uscities.csv') %>%
   st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
   filter(!state_name %in% c('Puerto Rico', 'Alaska', 'Hawaii'))
-
-
 
 # transform cities, conus, country projections to eqdc
 cities = st_transform(cities, eqdc)
 conus = st_transform(conus, eqdc)
 country = st_transform(country, eqdc)
 ```
-
-
-# Question 2:
-
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # 2.1 - Distance to USA Border (km)
 
@@ -81,14 +65,15 @@ cities_b_five_nogeom = cities_b %>%
   st_drop_geometry() %>% 
   head(5)
 
-
-knitr::kable(cities_b_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to border'))
-
-
 # 5 citiest furthest from US border
 cities_b_five = cities_b %>%
   head(5)
 
+knitr::kable(cities_b_five_nogeom, caption = 'Cities furthest from US Border', col.names = c('City', 'State', 'Distance to border'))
+```
+![](../img/cities-distance-US-border.png)
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 
 # 2.2 - Distance to States (km)
 conus_c = st_combine(conus) %>%
@@ -107,14 +92,15 @@ cities_s_five_nogeom = cities_s %>%
   st_drop_geometry() %>%
   head(5)
 
-knitr::kable(cities_s_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to state border'))
-
+knitr::kable(cities_s_five_nogeom, caption = 'Cities furthest from a State border', col.names = c('City', 'State', 'Distance to state border'))
 
 # 5 citiest furthest from US state border
 cities_s_five = cities_s %>%
   head(5)
+```
+![](../img/cities-distance-state-border.png)
 
-
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # 2.3 - Distance to Mexico (km)
 
 # mexico border
@@ -132,10 +118,11 @@ mex_cities_nogeom = cities %>%
   st_drop_geometry() %>% 
   head(5)
 
-knitr::kable(mex_cities_nogeom, caption = '5 citiest farthest from Mexico border', col.names = c('City', 'State', 'Distance to Mexico border'))
+knitr::kable(mex_cities_nogeom, caption = 'Cities furthest from Mexican border', col.names = c('City', 'State', 'Distance to Mexico border'))
+```
 
 
-
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # distance from US cities to Mexico border
 mex_cities = cities %>%
   mutate(dist_mex = st_distance(cities, mexico), dist_mex = set_units(dist_mex, 'km'), dist_mex = drop_units(dist_mex)) %>%
@@ -143,10 +130,7 @@ mex_cities = cities %>%
   arrange(-dist_mex) %>%
   head(5)
 
-
-
 # 2.4 - Distance to Canada (km)
-
 # canada border
 canada = country %>%
   filter(admin %in% 'Canada') %>%
@@ -161,9 +145,7 @@ canada_cities_nogeom = cities %>%
   st_drop_geometry() %>% 
   head(5)
 
-knitr::kable(canada_cities_nogeom, caption = '5 citiest farthest from Canadian border', col.names = c('City', 'State', 'Distance to Canada border'))
-
-
+knitr::kable(canada_cities_nogeom, caption = 'Cities furthest from Canadian border', col.names = c('City', 'State', 'Distance to Canada border'))
 
 # distance from US cities to Canada border
 canada_cities = cities %>%
@@ -172,41 +154,28 @@ canada_cities = cities %>%
   arrange(-dist_can) %>%
   head(5)
 ```
-
-# Question 3:
-
-# 3.1 Most populated US cities
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-# 3.1 Data
-
-# 10 most populated US cities
-big_cities = cities %>%
-  select(city, state_name, population) %>%
-  arrange(-population) %>%
-  head(10)
-
-# ggplot of ten most populated cities in US
-most_pop_cities_ggplot = ggplot() +
-  geom_sf(data = conus, fill = 'cornflowerblue', alpha = .5, size = .5) +
-  geom_sf(data = mexico, lty = 1) +
-  geom_sf(data = canada, lty = 1) +
-  geom_sf(data = big_cities, aes(city, state_name), col = 'black', size = 3) +
-  geom_label_repel(data = big_cities, aes(geometry = geometry, label = city), stat = 'sf_coordinates') +
-  labs(title = 'Ten most populated US cities',
-       x = 'Longitude',
-       y = 'Latitude')
-```
-
-
-
-
-
-
-![](../img/10-most-pop-US-cities.png)
-
-
-![](../img/cities-distance-US-border.png)
-
-![](../img/cities-distance-state-border.png)
 ![](../img/cities-equidistance-from-Mex-can.png)
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+# table of number cities in border zone, border pop, percentage total pop
+border_zone_stats = cities %>%
+  st_drop_geometry() %>%
+  mutate(total_pop = sum(population)) %>%
+  mutate(cities_zone = st_distance(cities, conus_u), cities_zone = set_units(cities_zone, 'km'), cities_zone = drop_units(cities_zone)) %>%
+  filter(cities_zone <= 160) %>%
+  summarise(border_pop = sum(population), border_pop_percentage = (border_pop/total_pop)*100, num_cities = n()) %>%
+  head(1)
+
+knitr::kable(border_zone_stats, caption = 'States within 160 km of US Border', col.names = c('Border zone population', 'Percent of total US population', 'Number of cities'))
+
+#cities within 160 km of border
+border_zone = cities %>%
+  st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
+  mutate(dist_to_border = st_distance(cities, conus_u), dist_to_border = set_units(dist_to_border, 'km'), dist_to_border = drop_units(dist_to_border)) %>%
+  filter(dist_to_border <= 160) %>%
+  select(city, state_name, dist_to_border, population)
+```
 ![](../img/border-zone-cities.png)
+
+
+
