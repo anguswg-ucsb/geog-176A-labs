@@ -8,6 +8,7 @@ library(sf)        # vector manipulation
 library(raster)    # raster manipulation
 library(fasterize) # "faster" raster
 library(whitebox)  # terrain analysis
+library(AOI)
 
 # Data libraries
 library(osmdata)   # OSM API
@@ -21,7 +22,10 @@ write_sf(basin, dsn = "data/USGS-11119750.gpkg")
 
 # Elevation raster
 elev  = get_elev_raster(basin, z = 13) %>%
-  crop(basin)
+  crop(basin) %>%
+  mask(basin)
+
+
 writeRaster(elev, "data/mission-creek-area-elev.tif", overwrite = TRUE)
 
 # meters to feet conversion
@@ -40,8 +44,8 @@ centroids = buildings$osm_polygons %>%
 basin_buildings = st_intersection(centroids, basin)
 
 # railway point
-railway = buildings$osm_points %>%
-  filter(name == 'railway')
+railway = centroids %>%
+  filter(amenity == 'railway')
 
 # OSM waterway query
 waterways = opq(basin) %>%
@@ -58,14 +62,14 @@ wbt_hillshade('data/mission-creek-area-elev.tif', "data/mission-creek-area-hills
 hillshade = raster('data/mission-creek-area-hillshade.tif')
 
 # hillshade, basin boundary, river flowlines plots
-plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), main = 'Hillshade')
+plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
 plot(basin, add = TRUE, lwd = 2)
 plot(basin_streams, add = TRUE, col = 'cyan4', lwd = 3)
 
 # Height Above Nearest Drainage
 
 # Stream raster
-streams_buff = streams %>% st_transform(5070) %>%
+streams_buff = basin_streams %>% st_transform(5070) %>%
   st_buffer(10) %>%
   st_transform(4326)
 
@@ -73,7 +77,7 @@ streams_rast = fasterize(streams_buff, elev2)
 writeRaster(streams_rast, 'data/mission-creek-area-streams-rast.tif', overwrite = TRUE)
 
 # Hydrological corrected surface (breach depressions)
-wbt_breach_depressions('data/mission-creek-area-streams-rast.tif', 'data/mission-creek-area-breach-depress.tif')
+wbt_breach_depressions('data/mission-creek-area-elev.tif', 'data/mission-creek-area-breach-depress.tif')
 breach_depress = raster('data/mission-creek-area-breach-depress.tif')
 
 # HAND raster
@@ -88,18 +92,48 @@ writeRaster(hand2, 'data/mission-creek-area-HAND-offset.tif', overwrite = TRUE)
 
 
 # 2017 Impact Assessment:
-hand3 = hand2
-hand3[hand3 > 10.02] = NA
+#hand3 = hand2
+#hand3[hand3 > 10.02] = NA
 
 flood_func = function(x){
-  ifelse(x == ndvi_mask, 1, NA)
+  ifelse(x < 10.02, x, NA)
 }
 
 
+hand_r = calc(hand2, flood_func)
+
+plot(hand_r)
+
+plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
+plot(basin, add = TRUE, lwd = 2)
+plot(hand_r, col = rev(blues9), add = TRUE, lwd = 6)
+plot(railway, cex = 1, pch = 16, add = TRUE)
+
+# Impacted Structures
+
+build_on_stream = st_intersection(centroids, streams_buff)
+
+plot(build_on_stream, col = 'black')
+
+
+# Flood Inudation Map library
+
+sb = aoi_get("Santa Barbara") %>%
+  st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
+  st_transform(5070) %>%
+  st_bbox() %>%
+  st_as_sfc() %>%
+  st_as_sf()
+
+writeRaster(sb, filename = 'data/santa-barbara.tif', overwrite = TRUE)
+plot(sb)
+
+basin_sb = crop(hand, sb)
 
 
 
-?getValues
+
+
 
 
 
