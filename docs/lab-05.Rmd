@@ -7,7 +7,8 @@ output:
   theme: journal
 ---
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
+```{r, message = FALSE, warning = FALSE}
+# Libraries
 library(knitr)
 library(units)
 library(readxl)
@@ -21,8 +22,6 @@ library(raster)
 library(osmdata)
 ```
 
-
-# Question 1:
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 bb = read_csv('../data/uscities.csv') %>%
   filter(city == 'Palo') %>%
@@ -35,9 +34,6 @@ bb = read_csv('../data/uscities.csv') %>%
 
 ```
 
-# Question 2:
-
-# Step 1
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 scenes = lsat_scenes()
 
@@ -50,7 +46,8 @@ down = scenes %>%
 
 write.csv(down, file = '../data/palo-flood.csv', row.names = FALSE)
 ```
-# Step 2
+
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 meta = read_csv('../data/palo-flood.csv')
 
@@ -61,7 +58,7 @@ files = lsat_scene_files(meta$download_url) %>%
 ```
 
 
-# Step 3
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 st = sapply(files, lsat_image)
 
@@ -69,12 +66,12 @@ s = stack(st) %>%
   setNames(c('Coastal', 'Blue', 'Green', 'Red', 'NIR', 'SWIR1')) 
 
 ```
-## Dimensions: 
-### The stacked image has dimensions of 7811 rows, 7681 columns, 59996291 cells, and 6 layers.
-### The CRS of the image stack is +proj=utm +zone=15 +datum=WGS84 +units=m +no_defs
-### The cell resolution of the image stack is x = 30 and y = 30.
 
-# Step 4
+## Dimensions: 
+
+#### The stacked image has dimensions of 7811 rows, 7681 columns, 59996291 cells, and 6 layers. The CRS of the image stack is +proj=utm +zone=15 +datum=WGS84 +units=m +no_defs. The cell resolution of the image stack is x = 30 and y = 30.
+
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 cropper = bb %>% st_as_sf() %>%
   st_transform(crs(s))
@@ -82,14 +79,12 @@ cropper = bb %>% st_as_sf() %>%
 r = crop(s, cropper)
 
 ```
+
 ## Dimensions: 
-### The cropped image stack has dimensions of 340 rows, 346 columns, 117640 cells, and 6 layers.
-### The CRS of the cropped image stack is +proj=utm +zone=15 +datum=WGS84 +units=m +no_defs
-### The cell resolution of the cropped image stack is x = 30 and y = 30.
 
-# Question 3:
+#### The cropped image stack has dimensions of 340 rows, 346 columns, 117640 cells, and 6 layers. The CRS of the cropped image stack is +proj=utm +zone=15 +datum=WGS84 +units=m +no_def. The cell resolution of the cropped image stack is x = 30 and y = 30.
 
-# Step 1
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 nat_col = plotRGB(r, r = 4, g = 3, b = 2)
 inf_NIR = plotRGB(r, r = 5, g = 4, b = 3, stretch = 'lin')
@@ -97,14 +92,11 @@ false_SWIR = plotRGB(r, r = 5, g = 6, b = 4, stretch = 'hist')
 false_agr = plotRGB(r, r = 6, g = 5, b = 2, stretch = 'hist')
 ```
 
-# Step 2
-
 ## Color stretch:
 
-### When a color stretch is applied, the maximum and minimum colors in the images become the new range of colors. The result of the stretch is that the features being highlighted by the given RGB channel are more emphasized and clearly seen in the image.
+#### When a color stretch is applied, the maximum and minimum colors in the images become the new range of colors. The result of the stretch is that the features being highlighted by the given RGB channel are more emphasized and clearly seen in the image.
 
-# Question 4:
-# Step 1
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # NVDI
 x = (r$NIR - r$Red)/ (r$NIR + r$Red)
@@ -152,7 +144,7 @@ swi_func = function(b) {
 swi = calc(b, swi_func)
 ```
 
-# Step 2
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 water_features_stack = stack(ndvi, ndwi, mndwi, wri, swi) %>%
   setNames(c('NDVI', 'NDWI', 'MNDWI', 'WRI', 'SWI'))
@@ -162,23 +154,21 @@ plot(water_features_stack, col = "blue")
 
 ## Image discussion:
 
-### The NDVI, NDWI, and WRI images are the most similar in that they show a lesser amount of flooded area compared to the SWI and MNDWI images. The SWI image highlights a wider flood area buffering the river and also picks up on other flooded areas outside of the rivers natural channel.
+#### The NDVI, NDWI, and WRI images are the most similar in that they show a lesser amount of flooded area compared to the SWI and MNDWI images. The SWI image highlights a wider flood area buffering the river and also picks up on other flooded areas outside of the rivers natural channel.
 
-# Question 5:
-
-# Step 1
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 set.seed(09052020)
 ```
 
 
-# Step 2
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 v = getValues(r)
-dim(v)
 ```
+
 ## Dimensions:
-## The dimensions of the extracted values from the 6 band raster stack are 117640, 6 which means there are 117640 cells and 6 layers in the raster.
+
+#### The dimensions of the extracted values from the 6 band raster stack are 117640, 6 which means there are 117640 cells and 6 layers in the raster.
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 idx = which(!is.na(v))
 v = na.omit(v)
@@ -190,8 +180,8 @@ values(new_raster) = NA
 new_raster[idx] = E$cluster
 ```
 
-# Step 3
-### Tables of binary flood masks vs. kmeans_raster
+
+### Tables of binary flood masks vs. kmeans raster
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 tab_ndvi = table(values(ndvi), values(new_raster))
 tab_ndwi = table(values(ndwi), values(new_raster))
@@ -208,9 +198,9 @@ new_raster_2 = calc(new_raster, flood_func)
 final = addLayer(water_features_stack, new_raster_2)
 final[is.na(final)] = 0
 ```
-# Question 6:
 
-# Step 1
+
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # Calculate total area of the flooded cells in each image
 area_ndvi = (cellStats(ndvi, 'sum') * 900)
@@ -224,7 +214,8 @@ area_df = data.frame(img_band = c('NDVI', 'NDWI', 'MNDWI', 'WRI', 'SWI', 'k-mean
                       total_area = c(area_ndvi, area_ndwi, area_mndwi, area_wri, area_swi, area_new_rast_2))
 kable(area_df, caption = 'Total Flooded Area' , col.names = c('Image band', 'Area(m$^{2}$)'))
 ```
-# Step 2
+
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # Uncertainty
 Uncertainty = sum(final)
@@ -235,7 +226,8 @@ mapview(Uncertainty, col = RColorBrewer::brewer.pal(blues9, 'Spectral'))
 ```
 
 ## Cell Values:
-### Some of the cells have decimal values as the data is streamed in chunks meaning portions of the Web map will be work even though not all the data in the cells has yet to be fully rendered.
+
+#### Some of the cells have decimal values as the data is streamed in chunks meaning portions of the Web map will be work even though not all the data in the cells has yet to be fully rendered.
 
 
 
