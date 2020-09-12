@@ -144,15 +144,21 @@ newCasesPerCap4_ggplot
 
 ggsave(newCasesPerCap4_ggplot, file = 'img/daily-new-cases-per-capita-in-fourStates.png', width = 10)
 
-rlang::last_error()
 
 # Question 3:
 
-center_csv = 'https://mikejohnson51.github.io/spds/data/county-centroids.csv'
+centers_csv = 'https://mikejohnson51.github.io/spds/data/county-centroids.csv'
 
-centers = read_csv(center_csv) %>%
-  select(X1, fips = statefp, county = name, state = state_name, LON, LAT)
+centers = read_csv(centers_csv
 
+covid_centroids = left_join(covid, centers, by = 'fips') %>%
+  group_by(date, county) %>%
+  summarise(sumX = sum(LON), sumY = sum(LAT), cases = sum(cases),
+            weightMeanCenter = weighted.mean(sumX, sumY, cases))
+
+
+
+class(covid_centroids)
 covidCenters = inner_join(centers, covid, by = 'county') %>%
   group_by(date, county) %>%
   summarise(sumX = sum(LON), sumY = sum(LAT), cases = sum(cases),

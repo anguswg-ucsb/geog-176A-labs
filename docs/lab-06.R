@@ -99,34 +99,18 @@ flood_func = function(x){
   ifelse(x < 10.02, x, NA)
 }
 
-
 hand_r = calc(hand2, flood_func)
-
-plot(hand_r)
 
 plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
 plot(basin, add = TRUE, lwd = 2)
 plot(hand_r, col = rev(blues9), add = TRUE, lwd = 6)
-plot(railway, col = 'green', cex = 1, pch = 16, add = TRUE)
-plot(basin_buildings, add =TRUE, col = 'red', pch = 16, cex = 0.08)
-
-
-
-
+plot(railway, add = TRUE, col = 'green', cex = 1, pch = 16)
+plot(basin_buildings$geometry, add = TRUE, col = cols, pch = 16, cex = 0.08)
 
 # Estimate the impacts
-builds_on_stream = st_intersection(streams_buff, basin_buildings)
-plot(builds_on_stream)
-plot(basin_buildings)
-
 flood_depth = extract(hand_r, basin_buildings)
-
-
-flood_depth = na.omit(flood_depth)
-
-st_intersection(centroids, flood_depth)
-
-  length(flood_depth)
+cols = ifelse(!is.na(flood_depth), 'darkred', 'black')
+sum(cols == 'darkred')
 
 
 
