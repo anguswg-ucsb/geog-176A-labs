@@ -107,13 +107,47 @@ plot(hand_r)
 plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
 plot(basin, add = TRUE, lwd = 2)
 plot(hand_r, col = rev(blues9), add = TRUE, lwd = 6)
-plot(railway, cex = 1, pch = 16, add = TRUE)
+plot(railway, col = 'green', cex = 1, pch = 16, add = TRUE)
+plot(basin_buildings, add =TRUE, col = 'red', pch = 16, cex = 0.08)
+
+
+
+
+
+# Estimate the impacts
+builds_on_stream = st_intersection(streams_buff, basin_buildings)
+plot(builds_on_stream)
+plot(basin_buildings)
+
+flood_depth = extract(hand_r, basin_buildings)
+
+
+flood_depth = na.omit(flood_depth)
+
+st_intersection(centroids, flood_depth)
+
+  length(flood_depth)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Impacted Structures
 
 build_on_stream = st_intersection(centroids, streams_buff)
 
 plot(build_on_stream, col = 'black')
+
 
 
 # Flood Inudation Map library
