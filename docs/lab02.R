@@ -1,3 +1,5 @@
+
+
 library(tidyverse)
 library(knitr)
 library(readxl)
@@ -149,20 +151,20 @@ ggsave(newCasesPerCap4_ggplot, file = 'img/daily-new-cases-per-capita-in-fourSta
 
 centers_csv = 'https://mikejohnson51.github.io/spds/data/county-centroids.csv'
 
-centers = read_csv(centers_csv
+centers = read_csv(centers_csv)
+
 
 covid_centroids = left_join(covid, centers, by = 'fips') %>%
-  group_by(date, county) %>%
-  summarise(sumX = sum(LON), sumY = sum(LAT), cases = sum(cases),
-            weightMeanCenter = weighted.mean(sumX, sumY, cases))
+  group_by(date) %>%
+  summarise(wmX = sum(LON*cases) / sum(cases), wmY = sum(LAT*cases) / sum(cases), na.rm = TRUE)
+
+#class(covid_centroids)
+#covidCenters = inner_join(centers, covid, by = 'county') %>%
+#group_by(date, county) %>%
+#summarise(sumX = sum(LON), sumY = sum(LAT), cases = sum(cases),
+#         weightMeanCenter = weighted.mean(sumX, sumY, cases))
 
 
-
-class(covid_centroids)
-covidCenters = inner_join(centers, covid, by = 'county') %>%
-  group_by(date, county) %>%
-  summarise(sumX = sum(LON), sumY = sum(LAT), cases = sum(cases),
-            weightMeanCenter = weighted.mean(sumX, sumY, cases))
 
 
 

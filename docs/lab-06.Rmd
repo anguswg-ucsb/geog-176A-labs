@@ -120,6 +120,8 @@ plot(basin_buildings$geometry, add = TRUE, col = cols, pch = 16, cex = 0.08)
 ```
 
 
+![](../data/mission-creek-fim.gif)
+
 
 
 
