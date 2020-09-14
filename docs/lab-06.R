@@ -13,9 +13,6 @@ library(AOI)
 # Data libraries
 library(osmdata)   # OSM API
 library(elevatr)   # Elevation  Web Tiles
-library(units)
-library(mapview)
-library(fasterize)
 library(gifski)
 
 
@@ -145,7 +142,7 @@ save_gif({
 
     tmp = hand_sb
     tmp[tmp >= i] = NA
-    flood_depth = extract(tmp, builds)
+    flood_depth = extract(tmp, basin_buildings)
     cols = ifelse(!is.na(flood_depth), 'darkred', 'black')
 
 
@@ -165,16 +162,7 @@ delay = .7, loop = TRUE)
 writeRaster(sb, filename = 'data/santa-barbara.tif', overwrite = TRUE)
 plot(sb)
 
-tmp = hand_sb
-tmp[tmp >= i] = NA
-flood_depth = extract(tmp, builds)
-cols = ifelse(!is.na(flood_depth), 'darkred', 'black')
 
-plot(builds$geometry, add = TRUE, col = cols, pch = 16, cex = 0.08)
-plot(hillshade_sb, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
-plot(basin_sb, add = TRUE, lwd = 2, col = NA)
-plot(tmp, col = rev(blues9), add = TRUE, lwd = 6)
-plot(railway, add = TRUE, col = 'green', cex = 1, pch = 16)
 
 
 
