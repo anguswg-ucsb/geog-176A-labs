@@ -14,19 +14,17 @@ library(raster)    # raster manipulation
 library(fasterize) # "faster" raster
 library(whitebox)  # terrain analysis
 library(AOI)
+
 # Data libraries
 library(osmdata)   # OSM API
 library(elevatr)   # Elevation  Web Tiles
-library(units)
-library(mapview)
-library(fasterize)
 
 # USGS Mission Creek, Santa Barbara gage data
 basin  = read_sf("https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-11119750/basin/")
 write_sf(basin, dsn = "../data/USGS-11119750.gpkg")
 ```
 
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
 # Elevation raster
 elev  = get_elev_raster(basin, z = 13) %>%
   crop(basin) %>%
@@ -67,12 +65,7 @@ basin_streams = st_intersection(streams, basin)
 wbt_hillshade('../data/mission-creek-area-elev.tif', "data/mission-creek-area-hillshade.tif")
 hillshade = raster('../data/mission-creek-area-hillshade.tif')
 
-# hillshade, basin boundary, river flowlines plots
-plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
-plot(basin, add = TRUE, lwd = 2)
-plot(basin_streams, add = TRUE, col = 'cyan4', lwd = 3)
-
-# Height Above Nearest Drainage
+# Height Above Nearest Drainage (HAND)
 
 # Stream raster
 streams_buff = basin_streams %>% st_transform(5070) %>%
@@ -97,8 +90,7 @@ hand2[streams_rast == 1] = 0
 writeRaster(hand2, '../data/mission-creek-area-HAND-offset.tif', overwrite = TRUE)
 
 # 2017 Impact Assessment:
-#hand3 = hand2
-#hand3[hand3 > 10.02] = NA
+
 
 flood_func = function(x){
   ifelse(x < 10.02, x, NA)
@@ -106,11 +98,14 @@ flood_func = function(x){
 
 hand_r = calc(hand2, flood_func)
 
+
 # Estimate the impacts
 flood_depth = extract(hand_r, basin_buildings)
 cols = ifelse(!is.na(flood_depth), 'darkred', 'black')
 sum(cols == 'darkred')
-
+```
+## Estimated Impacts of flooding on structures along Mission Creek
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
 plot(basin, add = TRUE, lwd = 2)
 plot(hand_r, col = rev(blues9), add = TRUE, lwd = 6)
@@ -120,7 +115,7 @@ plot(basin_buildings$geometry, add = TRUE, col = cols, pch = 16, cex = 0.08)
 ```
 
 
-![](../data/mission-creek-fim.gif)
+
 
 
 
