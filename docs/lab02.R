@@ -148,21 +148,28 @@ ggsave(newCasesPerCap4_ggplot, file = 'img/daily-new-cases-per-capita-in-fourSta
 
 
 # Question 3:
-
+library(sf)
+library(USAboundaries)
 centers_csv = 'https://mikejohnson51.github.io/spds/data/county-centroids.csv'
 
 centers = read_csv(centers_csv)
 
-
-covid_centroids = left_join(covid, centers, by = 'fips') %>%
+conus = us_states() %>% filter(!state_name %in% c('Alaska', 'Hawaii', 'Puerto Rico'))
+covid_centroids = inner_join(covid, centers, by = 'fips') %>%
   group_by(date) %>%
-  summarise(wmX = sum(LON*cases) / sum(cases), wmY = sum(LAT*cases) / sum(cases), na.rm = TRUE)
+  summarise(wmX = sum(LON*cases, na.rm = TRUE) / sum(cases, na.rm = TRUE), wmY = sum(LAT*cases, na.rm = TRUE) / sum(cases, na.rm = TRUE)) %>%
+  st_as_sf(coords = c('wmX', 'wmY'), crs = 4326)
 
-#class(covid_centroids)
-#covidCenters = inner_join(centers, covid, by = 'county') %>%
+plot(covid_centroids)
+plot(conus$geometry)
+plot(covid_centroids, add = TRUE)
+
+class(covid_centroids)
+
+#covid_centers = inner_join(centers, covid, by = 'county') %>%
 #group_by(date, county) %>%
 #summarise(sumX = sum(LON), sumY = sum(LAT), cases = sum(cases),
-#         weightMeanCenter = weighted.mean(sumX, sumY, cases))
+ #       weightMeanCenter = weighted.mean(sumX, sumY, cases))
 
 
 

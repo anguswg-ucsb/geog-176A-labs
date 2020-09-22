@@ -56,6 +56,28 @@ streams = waterways$osm_lines
 # clip buildings within basin boundary
 basin_streams = st_intersection(streams, basin)
 
+
+# Slope raster
+wbt_slope('data/mission-creek-area-elev.tif', "data/mission-creek-area-slope.tif")
+slope = raster('data/mission-creek-area-slope.tif')
+
+# Slope, basin boundary, river flowlines plots
+plot(slope, box = FALSE, axes = FALSE, col = terrain.colors(256), main = "Slope")
+plot(basin, add = TRUE, lwd = 2)
+plot(basin_streams, add = TRUE, col = 'black', lwd = 3)
+
+
+# Aspect raster
+wbt_aspect('data/mission-creek-area-elev.tif', "data/mission-creek-area-aspect.tif")
+aspect = raster('data/mission-creek-area-aspect.tif')
+
+# Aspect, basin boundary, river flowlines plots
+plot(aspect, box = FALSE, axes = FALSE, col = rainbow(8), main = 'Aspect')
+plot(basin, add = TRUE, lwd = 2)
+plot(basin_streams, add = TRUE, col = 'black', lwd = 3)
+
+
+
 # Hillshade raster
 wbt_hillshade('data/mission-creek-area-elev.tif', "data/mission-creek-area-hillshade.tif")
 hillshade = raster('data/mission-creek-area-hillshade.tif')
@@ -64,6 +86,8 @@ hillshade = raster('data/mission-creek-area-hillshade.tif')
 plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
 plot(basin, add = TRUE, lwd = 2)
 plot(basin_streams, add = TRUE, col = 'cyan4', lwd = 3)
+
+
 
 # Height Above Nearest Drainage
 

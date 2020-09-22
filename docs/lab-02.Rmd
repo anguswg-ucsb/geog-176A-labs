@@ -1,11 +1,14 @@
 ---
-title: "Geography 176A"
+title: "Trends in the COVID-19 Pandemic:"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
-subtitle: 'Lab 02: COVID-19 Pandemic'
+subtitle: 'Data organization and analysis'
 output:
   html_document:
     theme: journal
 ---
+
+***
+
 
 ```{r, message = FALSE, warning = FALSE}
 # Libraries
@@ -16,26 +19,30 @@ library(zoo)
 library(ggthemes)
 library(scales)
 
+# NY Times COVID-19 data
+covid_url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
+covid = read_csv(covid_url)
+```
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # US population estimates
 pop = read_excel('../data/PopulationEstimates.xls', skip = 2) %>%
   select(pop2019 = POP_ESTIMATE_2019, fips = FIPStxt)
 
-# NY Times COVID-19 data
-covid_url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
-covid = read_csv(covid_url)
-
 # State of interest
 state_1 = 'California'
-```
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
+
 newData = inner_join(pop, covid, by = 'fips') %>%
   filter(state == state_1) %>%
   group_by(county) %>%
   mutate(new_cases = cases - lag(cases))
 ```
 
-### The 5 counties with most cumulative cases are shown in the table below.
+### California counties with the most cumulative cases
+***
+
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 mostCases = newData %>%
@@ -48,15 +55,16 @@ mostCases = newData %>%
 knitr::kable(mostCases,
              col.names = c('County', 'Cases'))
 ```
+<br>
 
-
-### The 5 counties with the most cases is shown below.
+### California counties with the most cumulative cases
+***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 knitr::kable(mostCases, col.names = c('County', 'Cases'))
 
 ```
-
+<br>
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 mostNewCases = newData %>%
@@ -67,13 +75,14 @@ mostNewCases = newData %>%
   slice_max(new_cases, n = 5)
 ```
 
-### The counties with the most new cases is shown below.
+### California counties with the most new cases
+***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 knitr::kable(mostNewCases,
              col.names = c('County', 'New Cases'))
 ```
-
+<br><br>
 
 
 
@@ -91,9 +100,14 @@ last14days = newData %>%
 last14days
 ```
 
-## Safe counties in California:
-### The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. Below are the safe counties based on this criteria.
+## **Safe counties in California:**
+***
 
+### The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. Counties which meet this criteria are deemed safe counties. 
+
+
+### Below are the safe counties based on this criteria.
+***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE} 
 knitr::kable(last14days,
@@ -101,15 +115,75 @@ knitr::kable(last14days,
 ``` 
 
 
-![](../img/daily-new-cases-in-fourStates.png)
+<br>
 
-![](../img/daily-new-cases-per-capita-in-fourStates.png)
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 1: Daily new cases in California, Florida, Louisiana, and New York. These four states were chosen to represent regional differences the spread of COVID-19. New York experienced huge daily case counts in March and April at the beginning stages of the Pandemic. However, by June in New York, the rate of new cases after the initial outbreak would decline precipitously. Southern and western states saw a delay in new cases as the virus took time to spread, however the result was a dramatic spike in new cases from June through August. The south and western states now appear to be on the tail end of this surge."}
+fourStates = covid %>%
+  filter(state %in% c('California', 'New York', 'Louisiana', 'Florida')) %>%
+  group_by(state, date) %>%
+  summarise(cases = sum(cases, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(state) %>%
+  mutate(new_cases = cases - lag(cases),
+         sevenDayRollingMean = rollmean(new_cases, 7, fill = NA, align = 'right')) %>%
+  filter(new_cases >= 0)
 
-## Analysis:
+dailyNewCases_ggplot = ggplot(data = fourStates, aes(x = date, y = new_cases)) +
+  geom_col(aes(y = new_cases), col = 'aquamarine4', fill = 'aquamarine3') +
+  geom_line(aes(y = sevenDayRollingMean), col = 'darkgreen', size = 1) +
+  labs(title = 'Daily new cases in California, Florida, Louisiana, New York',
+       x = 'Date',
+       y = 'New cases',
+       subtitle = 'Data Source: The New York Times') +
+  facet_wrap(~state, scale = 'free_y') +
+  theme_economist() +
+  theme(aspect.ratio = .6) +
+  theme(axis.text.x = element_text(angle = 90, face = "bold"))
 
-### In the second plot we scaled for population and you can that although California has a large number of new cases, the number of new cases per capita is lower compared to Florida and Louisiana which are experiencing a large number of new cases with respect to population.  
+
+dailyNewCases_ggplot
+
+```
+***
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 2: Daily new cases per capita in California, Florida, Louisiana, and New York. By looking at daily new cases on a per capita basis one can scale for population. Scaling for populations highlights that although California has many new cases, the number of new cases per capita is significantly lower when compared to the outbreaks occurring in Florida and Louisiana."}
+state1 = 'California'
+state2 = 'New York'
+state3 = 'Louisiana'
+state4 = 'Florida'
+
+newCasesPerCap_4 = inner_join(pop, covid, by = 'fips') %>%
+  filter(state %in% c(state1, state2, state3, state4)) %>%
+  group_by(state, date) %>%
+  summarise(cases = sum(cases), pop2019 = sum(pop2019)) %>%
+  ungroup() %>%
+  group_by(state) %>%
+  mutate(new_cases = cases - lag(cases)) %>%
+  mutate(new_cases_per_capita = (new_cases / pop2019),
+         newCasesRollingMean = rollmean(new_cases_per_capita, 7, fill = NA, align = 'right'))
 
 
+newCasesPerCap4_ggplot = ggplot(data = newCasesPerCap_4, aes(x = date, y = new_cases_per_capita)) +
+  geom_bar(aes(y = new_cases_per_capita), col = 'cyan4', fill = 'cornflowerblue', stat="identity") +
+  geom_line(aes(y = newCasesRollingMean), col = 'darkblue', size = 1) +
+  labs(title = paste('Daily new cases per capita in',state1, ',',state4, ',', state3, ',', state2),
+       x = 'Date',
+       y = 'New cases per capita',
+       subtitle = 'Data Source: The New York Times') +
+  facet_wrap(~state, scale = 'free_y') +
+  scale_y_continuous(name = "New cases per capita", labels = comma) +
+  theme_economist() +
+  theme(aspect.ratio = .6) +
+  theme(axis.text.x = element_text(angle = 90, face = "bold"))
+
+
+newCasesPerCap4_ggplot
+
+
+```
+***
+
+<br>
 
 
 
