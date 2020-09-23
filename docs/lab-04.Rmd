@@ -1,11 +1,17 @@
 ---
-title: "Geography 176A"
+title: "US dams"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
-subtitle: 'Lab 04: Tesselations, Point-in-Polygon'
+subtitle: 'Tesselations and Point-in-Polygon analysis'
 output:
   html_document:
   theme: journal
 ---
+
+***
+
+<br>
+<br>
+
 ```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(readxl)
@@ -21,6 +27,11 @@ library(rmapshaper)
 library(mapview)
 library(spatstat)
 ```
+
+<br>
+<br>
+<br>
+
 
 ```{r, message = FALSE, warning = FALSE, echo =FALSE}
 conus = us_states() %>%
@@ -78,20 +89,31 @@ counties_u = counties %>%
   ms_simplify(keep = .05)
 ```
 
+
 ```{r, message = FALSE, warning = FALSE, echo =FALSE}
 # clipped tessellations
 voroni = st_intersection(counties_u, voroni_centroid)
 tri = st_intersection(counties_u, tri_centroid)
 sq_grid = st_intersection(counties_u, sq_county)
 hex_grid = st_intersection(counties_u, hex_county)
+
+county_pts = npts(counties) 
+county_u_pts = npts(counties_u)
+
+num_pts_df = data.frame('Original' = county_pts, 'Simplified' = county_u_pts, row.names = 'Number of points in polygon')
+
+
+
+
+knitr::kable(num_pts_df, caption = 'Points making up the US polygon')
 ```
-## Consequences of simplification:
 
-### original number of points = 51976
+<br>
 
-### simplified number of points = 161
+#### **I used the ms_simplify() function to reduce the number of points in the polygon outlining the US from 51976 points to only 161 points. Before simplifying, the computations took ~30 - 45 seconds and sometimes caused RStudio to crash After simplifying, the computations take ~4 seconds.**
 
-#### I used ms_simplify() to remove 51815 points. Before simplifying, the computations were taking 30 - 45 seconds and also caused RStudio to crash once. After simplifying, the computations take ~4 seconds.
+***
+
 
 
 ```{r, message = FALSE, warning = FALSE, echo =FALSE}
@@ -159,13 +181,46 @@ knitr::kable(tess_summary, caption = 'US county tesselations ', col.names = c('T
 ```
 
 
+<br>
+<br>
+<br>
 
 
+![](../img/sq-dam-plot.png)
 
-## Tesselation traits:
 
-#### The triangulation tesselation has the most polygon features so when a point-in-polygon analysis is done the results may be unclear as the points will be dispersed into more seperate polygons then in the other tesselations. On the other hand, the Voroni and Hexogonal tesselations have fewer polygons and thus may result in a more accurate representation of the number of points within a region of polygons. 
+![](../img/hex-dam-plot.png)
 
+![](../img/tri-dam-plot.png)
+
+![](../img/voroni-dam-plot.png)
+
+<br>
+<br>
+
+## **Tesselation traits:**
+
+***
+
+#### The triangulation tesselation has the most polygon features so when a point-in-polygon analysis is done the results may unclear compared to other tesselations as the points will be dispersed throughout a greater number of distinct polygons. On the other hand, the Voroni and Hexogonal tesselations have fewer polygons and thus may result in a more accurate representation of the number of points within a region of polygons. 
+
+***
+
+<br>
+<br>
+
+#### **Tesselated surfaces and point-in-polygon analysis:**
+
+***
+
+#### I will be choosing to use the Voroni tessalation going forward as it allows you to see the regions that have the most dams most clearly. The Voroni tesselation also has the benefit of fewer point calculations than the Triangulation tesselation which requires more point calculations, thus Triangulation puts more demand on the computer and takes longer to run. In terms of MAUP, the Triangulation tesselation creates extra areas which are unneccessary and arbitray and do not add to the analysis at hand. I also like the result of the Hexogonal tesselation as it does a good job of showing the number of dams in an area, but not as clearly as the Voroni tesselation
+
+***
+
+<br>
+<br>
+<br>
+<br>
 
 
 ```{r, message = FALSE, warning = FALSE}
@@ -230,10 +285,6 @@ county_dam_plot = plot_pip(dams_county, 'US dams - County lines')
 ```
 
 
-## Tesselated surfaces and point-in-polygon analysis:
-
-#### I will be choosing to use the Voroni tessalation going forward as it allows you to see the regions that have the most dams most clearly. The Voroni tesselation also has the benefit of fewer point calculations than the Triangulation tesselation which requires more point calculations, thus Triangulation puts more demand on the computer and takes longer to run. In terms of MAUP, the Triangulation tesselation creates extra areas which are unneccessary and arbitray and do not add to the analysis at hand. I also like the result of the Hexogonal tesselation as it does a good job of showing the number of dams in an area, but not as clearly as the Voroni tesselation
-
 ```{r, message = FALSE, warning = FALSE, echo =FALSE}
 nid_classifier = data.frame(abbr = c('R', 'C', 'P', 'O', 'S', 'I', 'F', 'H', 'T', 'D', 'G', 'N'),
                             purpose = c('Recreation', 'Flood Control', 'Fire Protection', 'Other', 'Water Supply', 'Irrigation', 'Fish and Wildlife', 'Hydroelectric', 'Tailings', 'Debris Control', 'Grade Stabalization', 'Navigation'))
@@ -278,30 +329,63 @@ flood_control_dams_plot = plot_pip2(flood_control_dams, "Flood control dams")
 fire_protect_dams_plot = plot_pip2(fire_dams, "Fire protection dams")
 water_supply_dams_plot = plot_pip2(water_sup_dams, "Water supply dams")
 ```
-![](../img/rec-dams-usa.png)
-![](../img/irrigation-dams-usa.png)
-![](../img/hydroelectric-dams-usa.png)
-![](../img/water-supply-dams-usa.png)
+
+
+```{r, fig.align="center", fig.width=10, fig.height=8, echo = FALSE}
+knitr::include_graphics("../img/rec-dams-usa.png")
 
 
 
-## Analysis
-Most of the water supply dams are located in dry regions of the country like Southern California, southern/central Texas, and Utah;
-this makes sense as these regions experience water shortages for extended periods of time,
-thus having water supplies within dams can make up for the periods of extended water shortages.
+```
+```{r, fig.align="center", fig.width=10, fig.height=8, echo = FALSE}
+knitr::include_graphics("../img/irrigation-dams-usa.png") 
 
-Irrigation dams are found in the southerwestern, central, and northwestern regions of the US. 
-The most irrigation dams are located in the middle of the country which makes a lot of sense as large amounts of farming occurs in this region, thus the need for irrigation.
 
-Hydroelectric dams are located in central California, the midwest Great Lakes region, and in the northeast along lake Ontario.
-The presence of Hydroelectric dams in each of these regions makes sense as they are all located on river systems. In central California the hydroelectric dams are located along the Sacramento River,
-in the midwest the hydroelectric dams are located on the Mississippi River, and in the northeast the dams are located along the region of Lake Ontario which flows out to the ocean.
-Hydroelectric dams require moving water to operate, hence there locations along river systems.
-The largest amount of hydroelectric dams are found in one county along Lake Ontario, in which ~60 hydroelectric dams are located in the area.
+```
 
-Most of the recreational dams are located at the end of the Mississippi river around several major metropolitan areas and population centers. It makes sense that this area has many recreational dams as the population centers will use them for recreation. 
+```{r, fig.align="center", fig.width=10, fig.height=8, echo = FALSE}
+knitr::include_graphics("../img/hydroelectric-dams-usa.png")
 
-For all of these specified dams, the Voroni tessellation allows one to see areas were dams of a specific purpose are highly concentrated. For example, in the northeast, the tile along Lake Ontario represents a location were a very high concentration of hydroelectric dams are, if it were a triangulated tessellation, the concentration within that county may be less evident as the dams are located in differing tiles.
+
+
+```
+
+```{r, fig.align="center", fig.width=10, fig.height=8, echo = FALSE}
+knitr::include_graphics("../img/water-supply-dams-usa.png")
+
+
+
+```
+
+
+
+
+
+## **Analysis**
+
+***
+
+**Most of the water supply dams are located in dry regions of the country like Southern California, southern/central Texas, and Utah;**
+**this makes sense as these regions experience water shortages for extended periods of time,**
+**thus having water supplies within dams can make up for the periods of extended water shortages.**
+
+**Irrigation dams are found in the southwestern, central, and northwestern regions of the US.**
+**The most irrigation dams are located in the middle of the country which makes a lot of sense as large amounts of farming occurs in this region, thus the need for irrigation.**
+
+**Hydroelectric dams are located in central California, the midwest Great Lakes region, and in the northeast along lake Ontario.**
+**The presence of Hydroelectric dams in each of these regions makes sense as they are all located on river systems. In central California the hydroelectric dams are located along the Sacramento River,**
+**in the midwest the hydroelectric dams are located on the Mississippi River, and in the northeast the dams are located along the region of Lake Ontario which flows out to the ocean.**
+**Hydroelectric dams require moving water to operate, hence there locations along river systems.**
+**The largest amount of hydroelectric dams are found in one county along Lake Ontario, in which ~60 hydroelectric dams are located in the area.**
+
+**Most of the recreational dams are located at the end of the Mississippi river around several major metropolitan areas and population centers. It makes sense that this area has many recreational dams as the population centers will use them for recreation.**
+
+**For all of these specified dams, the Voroni tessellation allows one to see areas were dams of a specific purpose are highly concentrated. For example, in the northeast, the tile along Lake Ontario represents a location were a very high concentration of hydroelectric dams are, if it were a triangulated tessellation, the concentration within that county may be less evident as the dams are located in differing tiles.**
+
+<br>
+<br>
+<br>
+<br>
 
 
 
