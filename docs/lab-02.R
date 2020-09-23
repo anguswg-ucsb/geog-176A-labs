@@ -103,7 +103,7 @@ dailyNewCases_ggplot = ggplot(data = fourStates, aes(x = date, y = new_cases)) +
        subtitle = 'Data Source: The New York Times') +
   facet_wrap(~state, scale = 'free_y') +
   theme_economist() +
-  theme(aspect.ratio = .5) +
+  theme(aspect.ratio = 0.6) +
   theme(axis.text.x = element_text(angle = 90, face = "bold"))
 
 

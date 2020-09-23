@@ -65,8 +65,6 @@ cities_b = cities %>%
   select(city, state_name, dist_border) %>%
   arrange(-dist_border)
 
-#knitr::kable(cities_b_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to border'))
-
 # 5 citiest furthest from US bordern geometry dropped
 cities_b_five_nogeom = cities_b %>%
   st_drop_geometry() %>%
@@ -75,6 +73,8 @@ cities_b_five_nogeom = cities_b %>%
 # 5 citiest furthest from US border
 cities_b_five = cities_b %>%
   head(5)
+
+knitr::kable(cities_b_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to border'))
 
 # 2.2 - Distance to States (km)
 conus_c = st_combine(conus) %>%
@@ -87,8 +87,6 @@ cities_s = cities %>%
   select(city, state_name, dist_state) %>%
   arrange(-dist_state)
 
-knitr::kable(cities_s_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to state border'))
-
 # 5 citiest furthest from state border, geometry dropped
 cities_s_five_nogeom = cities_s %>%
   st_drop_geometry() %>%
@@ -99,6 +97,11 @@ cities_s_five = cities_s %>%
   head(5)
 
 
+knitr::kable(cities_s_five_nogeom, caption = '5 citiest farthest from US border', col.names = c('City', 'State', 'Distance to state border'))
+
+
+
+
 # 2.3 - Distance to Mexico (km)
 
 # mexico border
@@ -106,8 +109,6 @@ mexico = country %>%
   filter(admin %in% 'Mexico') %>%
   st_union() %>%
   st_cast('MULTILINESTRING')
-
-knitr::kable(mex_cities_nogeom, caption = '5 citiest farthest from Mexico border', col.names = c('City', 'State', 'Distance to Mexico border'))
 
 # distance US cities to Mexico border, geometry dropped
 mex_cities_nogeom = cities %>%
@@ -126,6 +127,10 @@ mex_cities = cities %>%
   head(5)
 
 
+knitr::kable(mex_cities_nogeom, caption = '5 citiest farthest from Mexico border', col.names = c('City', 'State', 'Distance to Mexico border'))
+
+
+
 
 # 2.4 - Distance to Canada (km)
 
@@ -134,9 +139,6 @@ canada = country %>%
   filter(admin %in% 'Canada') %>%
   st_union() %>%
   st_cast('MULTILINESTRING')
-
-
-knitr::kable(canada_cities_nogeom, caption = '5 citiest farthest from Canadian border', col.names = c('City', 'State', 'Distance to Mexico border'))
 
 # distance US cities to Mexico border, geometry dropped
 canada_cities_nogeom = cities %>%
@@ -152,6 +154,10 @@ canada_cities = cities %>%
   select(city, state_name, dist_can) %>%
   arrange(-dist_can) %>%
   head(5)
+
+
+knitr::kable(canada_cities_nogeom, caption = '5 citiest farthest from Canadian border', col.names = c('City', 'State', 'Distance to Mexico border'))
+
 
 
 # Question 3:
