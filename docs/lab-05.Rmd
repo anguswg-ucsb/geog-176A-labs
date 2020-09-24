@@ -1,11 +1,28 @@
 ---
-title: "Geography 176A"
+title: "Rasters & Remote Sensing"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
-subtitle: 'Lab 05: Rasters & Remote Sensing'
+subtitle: "Palo, Iowa flood - 2017"
 output:
   html_document:
   theme: journal
 ---
+<br>
+<br>
+
+
+
+## **Background:**
+
+***
+
+#### **On September 26, 2016 the Cedar and Wapsipinicon rivers in Iowa experienced a torrent of water producing a flood wave that breached the riverbanks. The water level of the Cedar River measured ~20 feet — 8 feet above flood stage—near the city of Cedar Rapids. Palo, Iowa is a town upstream of Cedar Rapids and is comprised primarily of farmland, additionally they do not have a forecast location to give warning. I used rasters to create flood images and then applied thresholding, multiband Landsat imagery, and classification techniques to the images.**
+
+***
+
+
+
+<br>
+<br>
 
 ```{r, message = FALSE, warning = FALSE}
 # Libraries
@@ -21,6 +38,11 @@ library(mapview)
 library(raster)
 library(osmdata)
 ```
+
+
+<br>
+<br>
+<br>
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 bb = read_csv('../data/uscities.csv') %>%
@@ -67,10 +89,6 @@ s = stack(st) %>%
 
 ```
 
-## Dimensions: 
-
-#### The stacked image has dimensions of 7811 rows, 7681 columns, 59996291 cells, and 6 layers. The CRS of the image stack is +proj=utm +zone=15 +datum=WGS84 +units=m +no_defs. The cell resolution of the image stack is x = 30 and y = 30.
-
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 cropper = bb %>% st_as_sf() %>%
@@ -80,22 +98,57 @@ r = crop(s, cropper)
 
 ```
 
-## Dimensions: 
+## **Color stretch:**
 
-#### The cropped image stack has dimensions of 340 rows, 346 columns, 117640 cells, and 6 layers. The CRS of the cropped image stack is +proj=utm +zone=15 +datum=WGS84 +units=m +no_def. The cell resolution of the cropped image stack is x = 30 and y = 30.
+***
 
+#### **When a color stretch is applied, the maximum and minimum colors in the images become the new range of colors. The result of the stretch is that the features being highlighted by the given RGB channel are more emphasized and clearly seen in the image.**
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
+***
+
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 1:** Natural color . This is the closest true image bandwith. It is also prone to atmospheric interference"}
 nat_col = plotRGB(r, r = 4, g = 3, b = 2)
-inf_NIR = plotRGB(r, r = 5, g = 4, b = 3, stretch = 'lin')
-false_SWIR = plotRGB(r, r = 5, g = 6, b = 4, stretch = 'hist')
-false_agr = plotRGB(r, r = 6, g = 5, b = 2, stretch = 'hist')
 ```
 
-## Color stretch:
+***
+<br>
+<br>
+<br>
 
-#### When a color stretch is applied, the maximum and minimum colors in the images become the new range of colors. The result of the stretch is that the features being highlighted by the given RGB channel are more emphasized and clearly seen in the image.
 
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 2:** Color infared with a lin color stretch. Color infared does a good job of differentiating different types of vegatation as well as the health of the vegetation."}
+inf_NIR = plotRGB(r, r = 5, g = 4, b = 3, stretch = 'lin')
+```
+
+***
+<br>
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 3:** False color with a histogram color stretch. False color is good at seperating water from land in an image."}
+false_SWIR = plotRGB(r, r = 5, g = 6, b = 4, stretch = 'hist')
+```
+
+***
+<br>
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 4:** False color for agriculture with a histogram color stretch. In this bandwith agricultural crops appear as a vibrant green, non-crop vegetation appears in a dull green, and bare earth appears in fuchsia."}
+
+false_agr = plotRGB(r, r = 6, g = 5, b = 2, stretch = 'hist')
+
+```
+
+***
+<br>
+<br>
+<br>
+<br>
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # NVDI
@@ -151,10 +204,20 @@ water_features_stack = stack(ndvi, ndwi, mndwi, wri, swi) %>%
 plot(water_features_stack, col = "blue")
 ```
 
+<br>
+<br>
 
-## Image discussion:
+### **Image discussion:**
 
-#### The NDVI, NDWI, and WRI images are the most similar in that they show a lesser amount of flooded area compared to the SWI and MNDWI images. The SWI image highlights a wider flood area buffering the river and also picks up on other flooded areas outside of the rivers natural channel.
+***
+
+#### **The NDVI, NDWI, and WRI images are the most similar in that they show a lesser amount of flooded area compared to the SWI and MNDWI images. The SWI image highlights a wider flood area buffering the river and also picks up on other flooded areas outside of the rivers natural channel.**
+
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 set.seed(09052020)
@@ -165,9 +228,6 @@ set.seed(09052020)
 v = getValues(r)
 ```
 
-## Dimensions:
-
-#### The dimensions of the extracted values from the 6 band raster stack are 117640, 6 which means there are 117640 cells and 6 layers in the raster.
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 idx = which(!is.na(v))
@@ -181,7 +241,10 @@ new_raster[idx] = E$cluster
 ```
 
 
-### Tables of binary flood masks vs. kmeans raster
+## **Binary flood masks vs. k-means cluster raster**
+
+***
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 tab_ndvi = table(values(ndvi), values(new_raster))
 tab_ndwi = table(values(ndwi), values(new_raster))
@@ -214,7 +277,10 @@ area_df = data.frame(img_band = c('NDVI', 'NDWI', 'MNDWI', 'WRI', 'SWI', 'k-mean
                       total_area = c(area_ndvi, area_ndwi, area_mndwi, area_wri, area_swi, area_new_rast_2))
 kable(area_df, caption = 'Total Flooded Area' , col.names = c('Image band', 'Area(m$^{2}$)'))
 ```
-
+ 
+<br>
+<br>
+<br>
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # Uncertainty
@@ -224,15 +290,6 @@ Uncertainty = sum(final)
 Uncertainty[is.na(Uncertainty)] = 0
 mapview(Uncertainty, col = RColorBrewer::brewer.pal(blues9, 'Spectral'))
 ```
-
-## Cell Values:
-
-#### Some of the cells have decimal values as the data is streamed in chunks meaning portions of the Web map will be work even though not all the data in the cells has yet to be fully rendered.
-
-
-
-
-
 
 
 
