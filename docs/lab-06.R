@@ -3,6 +3,7 @@
 # Lab 06
 
 
+
 library(tidyverse)
 library(sf)        # vector manipulation
 library(raster)    # raster manipulation

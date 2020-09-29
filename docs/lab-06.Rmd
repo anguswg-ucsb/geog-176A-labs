@@ -1,11 +1,14 @@
 ---
-title: "Geography 176A"
+title: 'Flood Risk in Mission Creek: Past, Present, Future'
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
-subtitle: 'Lab 06: Flood Risk in Mission Creek: Past, Present, Future'
+subtitle: 'Terrain analysis using OSM and Whitebox'
 output:
-  html_document:
-  theme: journal
+  mikedown::ucsb:
+    toc: TRUE
+    number_sections: FALSE
+    code_folding: "hide"
 ---
+
 
 ```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
@@ -23,6 +26,12 @@ library(elevatr)   # Elevation  Web Tiles
 basin  = read_sf("https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-11119750/basin/")
 write_sf(basin, dsn = "../data/USGS-11119750.gpkg")
 ```
+
+## **Background**
+
+***
+
+#### Mission Creek begins at Rattle Snake Canyon, runs through Santa Barbara, and drains into the ocean. The basin has flooded on several occasions causing damage to structures situated along the basin. Data is sourced from a USGS gage using the USGS Network Linked Data Index.
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE, include = FALSE}
 # Elevation raster
@@ -63,8 +72,8 @@ basin_streams = st_intersection(streams, basin)
 
 
 # Slope raster
-wbt_slope('data/mission-creek-area-elev.tif', "data/mission-creek-area-slope.tif")
-slope = raster('data/mission-creek-area-slope.tif')
+wbt_slope('../data/mission-creek-area-elev.tif', "../data/mission-creek-area-slope.tif")
+slope = raster('../data/mission-creek-area-slope.tif')
 
 # Slope, basin boundary, river flowlines plots
 plot(slope, box = FALSE, axes = FALSE, col = terrain.colors(256), main = "Slope")
@@ -73,8 +82,8 @@ plot(basin_streams, add = TRUE, col = 'black', lwd = 3)
 
 
 # Aspect raster
-wbt_aspect('data/mission-creek-area-elev.tif', "data/mission-creek-area-aspect.tif")
-aspect = raster('data/mission-creek-area-aspect.tif')
+wbt_aspect('../data/mission-creek-area-elev.tif', "../data/mission-creek-area-aspect.tif")
+aspect = raster('../data/mission-creek-area-aspect.tif')
 
 # Aspect, basin boundary, river flowlines plots
 plot(aspect, box = FALSE, axes = FALSE, col = rainbow(8), main = 'Aspect')
@@ -84,8 +93,8 @@ plot(basin_streams, add = TRUE, col = 'black', lwd = 3)
 
 
 # Hillshade raster
-wbt_hillshade('data/mission-creek-area-elev.tif', "data/mission-creek-area-hillshade.tif")
-hillshade = raster('data/mission-creek-area-hillshade.tif')
+wbt_hillshade('../data/mission-creek-area-elev.tif', "../data/mission-creek-area-hillshade.tif")
+hillshade = raster('../data/mission-creek-area-hillshade.tif')
 
 # hillshade, basin boundary, river flowlines plots
 plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
@@ -103,7 +112,7 @@ streams_rast = fasterize(streams_buff, elev2)
 writeRaster(streams_rast, '../data/mission-creek-area-streams-rast.tif', overwrite = TRUE)
 
 # Hydrological corrected surface (breach depressions)
-wbt_breach_depressions('../data/mission-creek-area-elev.tif', 'data/mission-creek-area-breach-depress.tif')
+wbt_breach_depressions('../data/mission-creek-area-elev.tif', '../data/mission-creek-area-breach-depress.tif')
 breach_depress = raster('../data/mission-creek-area-breach-depress.tif')
 
 # HAND raster
@@ -131,7 +140,11 @@ flood_depth = extract(hand_r, basin_buildings)
 cols = ifelse(!is.na(flood_depth), 'darkred', 'black')
 sum(cols == 'darkred')
 ```
-## Estimated Impacts of flooding on structures along Mission Creek
+
+
+## **Estimated Impacts of flooding on structures along Mission Creek**
+
+***
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 plot(hillshade, box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .5), legend = FALSE, main = 'Hillshade')
 plot(basin, add = TRUE, lwd = 2)
