@@ -6,6 +6,8 @@ library(readxl)
 library(zoo)
 library(ggthemes)
 library(scales)
+library(kable)
+library(kableExtra)
 
 
 pop = read_excel('data/PopulationEstimates.xls', skip = 2) %>%
@@ -67,6 +69,7 @@ newCasesPerCapita = newData %>%
 
 knitr::kable(casesPerCapita, caption = paste(state_1, 'counties with the most new cases per capita'),
              col.names = c('County', 'New Cases per capita'))
+
 
 
 last14days = newData %>%

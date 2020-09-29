@@ -3,9 +3,18 @@ title: "Trends in the COVID-19 Pandemic:"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
 subtitle: 'Data organization and analysis'
 output:
-  html_document:
-    theme: journal
+  mikedown::ucsb:
+    toc: TRUE
+    number_sections: FALSE
+    code_folding: "hide"
 ---
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+library(rmarkdown)     # You need this library to run this template.
+library(mikedown) 
+```
 
 ***
 
@@ -19,11 +28,13 @@ library(zoo)
 library(ggthemes)
 library(scales)
 
+
 # NY Times COVID-19 data
 covid_url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
 covid = read_csv(covid_url)
 ```
 <br>
+
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # US population estimates
@@ -40,7 +51,12 @@ newData = inner_join(pop, covid, by = 'fips') %>%
   mutate(new_cases = cases - lag(cases))
 ```
 
-### California counties with the most cumulative cases
+### **California counties** (updates daily)
+
+***
+
+
+### **Most cumulative cases**
 ***
 
 
@@ -56,8 +72,9 @@ knitr::kable(mostCases,
              col.names = c('County', 'Cases'))
 ```
 <br>
+<br>
 
-### California counties with the most cumulative cases
+### **California counties with the most cumulative cases**
 ***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
@@ -65,6 +82,8 @@ knitr::kable(mostCases, col.names = c('County', 'Cases'))
 
 ```
 <br>
+<br>
+
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 mostNewCases = newData %>%
@@ -75,14 +94,15 @@ mostNewCases = newData %>%
   slice_max(new_cases, n = 5)
 ```
 
-### California counties with the most new cases
+### **Most new cases**
 ***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 knitr::kable(mostNewCases,
              col.names = c('County', 'New Cases'))
 ```
-<br><br>
+<br>
+<br>
 
 
 
@@ -103,10 +123,8 @@ last14days
 ## **Safe counties in California:**
 ***
 
-### The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. Counties which meet this criteria are deemed safe counties. 
+#### The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. Counties which meet this criteria are deemed safe counties. 
 
-
-### Below are the safe counties based on this criteria.
 ***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE} 
@@ -114,10 +132,16 @@ knitr::kable(last14days,
              col.names = c('County'))
 ``` 
 
+***
 
 <br>
+<br>
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 1: Daily new cases in California, Florida, Louisiana, and New York. These four states were chosen to represent regional differences the spread of COVID-19. New York experienced huge daily case counts in March and April at the beginning stages of the Pandemic. However, by June in New York, the rate of new cases after the initial outbreak would decline precipitously. Southern and western states saw a delay in new cases as the virus took time to spread, however the result was a dramatic spike in new cases from June through August. The south and western states now appear to be on the tail end of this surge."}
+## **Graphs**
+
+***
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 1:** Daily new cases in California, Florida, Louisiana, and New York. These four states were chosen to represent regional differences the spread of COVID-19. New York experienced huge daily case counts in March and April at the beginning stages of the Pandemic. However, by June in New York, the rate of new cases after the initial outbreak would decline precipitously. Southern and western states saw a delay in new cases as the virus took time to spread, however the result was a dramatic spike in new cases from June through August. The south and western states now appear to be on the tail end of this surge."}
 fourStates = covid %>%
   filter(state %in% c('California', 'New York', 'Louisiana', 'Florida')) %>%
   group_by(state, date) %>%
@@ -146,7 +170,11 @@ dailyNewCases_ggplot
 ```
 ***
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 2: Daily new cases per capita in California, Florida, Louisiana, and New York. By looking at daily new cases on a per capita basis one can scale for population. Scaling for populations highlights that although California has many new cases, the number of new cases per capita is significantly lower when compared to the outbreaks occurring in Florida and Louisiana."}
+<br>
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 2:** Daily new cases per capita in California, Florida, Louisiana, and New York. By looking at daily new cases on a per capita basis one can scale for population. Scaling for populations highlights that although California has many new cases, the number of new cases per capita is significantly lower when compared to the outbreaks occurring in Florida and Louisiana."}
 state1 = 'California'
 state2 = 'New York'
 state3 = 'Louisiana'
