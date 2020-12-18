@@ -1,5 +1,5 @@
 ---
-title: "Trends in the COVID-19 Pandemic:"
+title: "COVID-19 Pandemic:"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
 subtitle: 'Data organization and analysis'
 output:
@@ -8,8 +8,9 @@ output:
     number_sections: FALSE
     code_folding: "hide"
 ---
+
 <br>
-<br>
+
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 library(rmarkdown)     # You need this library to run this template.
@@ -18,200 +19,410 @@ library(mikedown)
 
 ***
 
+# **COVID-19 Pandemic** 
 
-```{r, message = FALSE, warning = FALSE}
+
+<br>
+<br>
+<br>
+
+
+## ***California***
+
+***
+
+```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
 # Libraries
+
 library(tidyverse)
-library(knitr)
-library(readxl)
-library(zoo)
-library(ggthemes)
+library(sf)
 library(scales)
+library(zoo)
+library(plotly)
+library(knitr)
+library(kableExtra)
+library(viridis)
 
+pop = readxl::read_excel('../data/PopulationEstimates.xls', skip = 2) %>%
+  select(state = State, pop_19 = POP_ESTIMATE_2019, fips = FIPStxt)
 
-# NY Times COVID-19 data
 covid_url = 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
 covid = read_csv(covid_url)
-```
-<br>
 
+tmp_state = 'California'
+shp = USAboundaries::us_states() %>%
+  filter(name == tmp_state)
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-# US population estimates
-pop = read_excel('../data/PopulationEstimates.xls', skip = 2) %>%
-  select(pop2019 = POP_ESTIMATE_2019, fips = FIPStxt)
+# Question 1:
 
-# State of interest
-state_1 = 'California'
+covid = inner_join(covid, select(pop, pop_19, fips), by = 'fips')
 
-
-newData = inner_join(pop, covid, by = 'fips') %>%
-  filter(state == state_1) %>%
+ca_covid = covid %>% filter(state == tmp_state) %>%
   group_by(county) %>%
-  mutate(new_cases = cases - lag(cases))
-```
+  mutate(new_cases = cases - lag(cases)) %>%
+  mutate(cases_per_cap = cases/pop_19, new_cases_per_cap = new_cases/pop_19)
 
-### **California counties** (updates daily)
+counties = USAboundaries::us_counties() %>%
+  filter(state_name == tmp_state)
 
-***
+# CASES PER 100,000 RESIDENTS
+cases_per_100k = ca_covid %>%
+  filter(date > max(date) - 7) %>%
+  group_by(county, pop_19) %>%
+  mutate(cases_100k = new_cases / (pop_19 / 100000)) %>%
+  mutate(cases_100k = (sum(cases_100k)/(7))) %>%
+  mutate(state = 'CA')
 
-
-### **Most cumulative cases**
-***
-
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-mostCases = newData %>%
-  group_by(county) %>%
-  summarise(cases = sum(cases, na.rm = TRUE)) %>%
+# 7 - DAY ROLLING MEAN
+ca_covid = ca_covid %>%
+  group_by(county, date) %>%
+  mutate(total_cases = sum(cases, na.rm = TRUE)) %>%
   ungroup() %>%
-  arrange(-cases) %>%
-  slice_max(cases, n = 5)
-
-knitr::kable(mostCases,
-             col.names = c('County', 'Cases'))
-```
-<br>
-<br>
-
-### **California counties with the most cumulative cases**
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-knitr::kable(mostCases, col.names = c('County', 'Cases'))
-
-```
-<br>
-<br>
-
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-mostNewCases = newData %>%
-  select(county, new_cases) %>%
   group_by(county) %>%
-  summarise(new_cases = sum(new_cases, na.rm = TRUE)) %>%
-  arrange(-new_cases) %>%
-  slice_max(new_cases, n = 5)
-```
+  mutate(new_cases = cases - lag(cases),
+         rolling_mean = rollmean(new_cases, 7, fill = NA, align = 'right'))
 
-### **Most new cases**
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-knitr::kable(mostNewCases,
-             col.names = c('County', 'New Cases'))
-```
-<br>
-<br>
-
-
-
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, results = 'hide'} 
-last14days = newData %>%
-  filter(date > max(date) - 13) %>%
-  group_by(county, pop2019) %>%
-  summarise(new_cases = sum(new_cases)) %>%
+# 7 - DAY ROLLING MEAN PER CAPITA
+ca_covid  = ca_covid %>%
+  group_by(county, date) %>%
+  mutate(pop_19 = sum(pop_19)) %>%
   ungroup() %>%
-  mutate(casePer100 = new_cases / (pop2019 / 100000)) %>%
-  filter(casePer100 <= 100) %>% 
-  pull(county)
+  group_by(county) %>%
+  mutate(rolling_mean_per_cap = rollmean(new_cases_per_cap, 7, fill = NA, align = 'right'))
 
-last14days
-```
-
-## **Safe counties in California:**
-***
-
-#### The state of California has determined that counties in which there have been more than 100 new cases per 100,000 residents over the past 14 days are to placed on a watch list that monitors for worsening coronavirus trends. Counties which meet this criteria are deemed safe counties. 
-
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE} 
-knitr::kable(last14days,
-             col.names = c('County'))
-``` 
-
-***
-
-<br>
-<br>
-
-## **Graphs**
-
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 1:** Daily new cases in California, Florida, Louisiana, and New York. These four states were chosen to represent regional differences the spread of COVID-19. New York experienced huge daily case counts in March and April at the beginning stages of the Pandemic. However, by June in New York, the rate of new cases after the initial outbreak would decline precipitously. Southern and western states saw a delay in new cases as the virus took time to spread, however the result was a dramatic spike in new cases from June through August. The south and western states now appear to be on the tail end of this surge."}
-fourStates = covid %>%
-  filter(state %in% c('California', 'New York', 'Louisiana', 'Florida')) %>%
+covid_tmp = covid %>%
+  filter(state == tmp_state) %>%
+  group_by(county) %>%
+  mutate(new_cases = cases - lag(cases)) %>%
+  mutate(cases_per_cap = cases/pop_19, new_cases_per_cap = new_cases/pop_19)
+ca_rolling = covid_tmp %>%
   group_by(state, date) %>%
   summarise(cases = sum(cases, na.rm = TRUE)) %>%
   ungroup() %>%
   group_by(state) %>%
   mutate(new_cases = cases - lag(cases),
-         sevenDayRollingMean = rollmean(new_cases, 7, fill = NA, align = 'right')) %>%
-  filter(new_cases >= 0)
+         rolling_mean = rollmean(new_cases, 7, fill = NA, align = 'right'))
+  # filter(new_cases >= 0)
+```
 
-dailyNewCases_ggplot = ggplot(data = fourStates, aes(x = date, y = new_cases)) +
-  geom_col(aes(y = new_cases), col = 'aquamarine4', fill = 'aquamarine3') +
-  geom_line(aes(y = sevenDayRollingMean), col = 'darkgreen', size = 1) +
-  labs(title = 'Daily new cases in California, Florida, Louisiana, New York',
+
+
+### **Risk level criteria**
+
+***
+
+
+#### In hopes of reducing the spread of COVID-19, the California government has created a tier based classification system for counties. The tiers are based on an adjusted case rate of the number of new cases per 100,000 residents over a 7-day period. 
+
+<br>
+
+```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width=1200 }
+
+# COUNTY LOCKDOWN STATUS
+# CRITERIA:
+# Widespread ----- daily new cases per 100k >= 7.0
+# Substantial ----- 7.0 > daily new cases per 100k >= 4.0
+# Moderate ----- 3.9 >= daily new cases per 100k >= 1.0
+# Minimal ----- 1.0 > daily new cases per 100kk
+
+criteria = data.frame(risk_level = c('Widespread', 'Substantial', 'Moderate', 'Minimal'),
+                      daily_new_cases_100k = c('> 7.0', '6.9 - 4.0', '3.9 - 1.0', '1.0 >') )
+
+criteria[2] <- cell_spec(criteria[[2]], color = "white", bold = T,
+    background = spec_color(1:4, end = 0.9, option = "D", direction = 1))
+
+kbl(criteria, col.names = c('Risk level', 'Daily new cases per 100,000 residents'), escape = F, align = "c") %>%
+  kable_material(c("striped", "hover")) %>% 
+  kable_styling(position = "center")
+```
+
+<br>
+<br>
+
+```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
+# CREATE DATAFRAME FOR CA COUNTIES + GEOMETRIES
+ca_spatial = ca_covid %>%
+  group_by(county) %>%
+  arrange(desc(date)) %>%
+  slice(n = 1)
+
+other_names = c('Oregon', 'Nevada', 'Arizona')
+
+other_states = USAboundaries::us_states() %>% 
+  filter(name %in% other_names)
+
+# SELECT DESIRED COLUMNS FROM COUNTIES SF DATAFRAME
+
+counties = counties %>% select(state = state_name, county = name, fips = geoid)
+# counties = counties %>% select(state, county, fips)
+
+# JOIN DATAFRAME OF 58 COUNTIES W/ RESPECTIVE GEOMETRIES
+ca_spatial = left_join(ca_spatial, select(counties, fips), by = 'fips') %>%
+  st_as_sf()
+
+temp7 = cases_per_100k %>% group_by(county) %>%
+  arrange(desc(date)) %>%
+  slice(n =1)
+
+ca_spatial = left_join(ca_spatial, select(temp7, county, cases_100k), by = 'county')
+
+font = list(
+  family = 'Courier',
+  size = 15,
+  color = 'white')
+label = list(
+  bgcolor = '#232F34',
+  bordercolor = 'transparent',
+  font = font)
+
+gg_cases_per_100 = ggplot() +
+  geom_sf(data = shp) +
+  geom_sf(data = ca_spatial, aes(fill = cases_100k,
+                                 text = paste0('', cases_100k),
+                                 text2 = county),
+          col = 'black', size = .3) +
+  labs(title = "Adjusted case rate",
+       fill = 'Cases per 100,000 residents') +
+    theme(axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(face = "bold", size = 16),
+        axis.title.y = element_text(face = "bold", size = 16, hjust = 0.5),
+        plot.title = element_text(face = 'bold', size = 20),
+        plot.subtitle = element_text(size = 14),
+        legend.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        legend.title.align = 0.5,
+        legend.text = element_text(face = "bold", size = 12))
+
+plotly_cases100k = ggplotly(gg_cases_per_100, 
+                            height = 800, width = 1200, 
+                            tooltip = c('text2', 'text')) %>%
+  style(hoverlabel = label) %>%
+  layout(font = font)
+
+
+plotly_cases100k
+
+
+```
+
+
+<br>
+<br>
+<br>
+
+```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
+tmp1 = ca_spatial %>% mutate(status = case_when(cases_100k >= 7.0 ~ 'Widespread',
+                                                7.0 > cases_100k & cases_100k >= 4.0 ~ 'Substantial',
+                                                3.9 > cases_100k & cases_100k >= 1.0 ~ 'Moderate',
+                                                1.0 > cases_100k ~ 'Minimal')) %>% 
+  mutate(status = as.factor(status))
+
+# RColorBrewer::display.brewer.all(n=4, exact.n=FALSE)
+# col3 = viridis::viridis_pal()
+# col4 = RColorBrewer::brewer.pal(9,"Viridis")
+# pals3 = leaflet::colorBin(col3, domain = 1:4)
+
+# COLOR EXAMPLE:
+
+# dat <- data.frame(x=runif(10),y=runif(10),
+#         grp = rep(LETTERS[1:5],each = 2),stringsAsFactors = TRUE)
+# library(RColorBrewer)
+# myColors <- brewer.pal(4,"YlOrRd")
+# names(myColors) <- levels(tmp1$status)
+# colScale <- scale_fill_manual(name = "status",values = myColors)
+
+gg_lockdown = ggplot() +
+  geom_sf(data = shp) +
+  geom_sf(data = tmp1, aes(fill = status),
+                                 # text = paste0('', cases_100k),
+                                 # text2 = county),
+          col = 'black', size = .3) +
+  viridis::scale_fill_viridis(discrete = TRUE, option = "D") +
+  labs(fill = 'Tier',
+       title = "County risk levels") +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(face = "bold", size = 16),
+        axis.title.y = element_text(face = "bold", size = 16, hjust = 0.5),
+        plot.title = element_text(face = 'bold', size = 20),
+        plot.subtitle = element_text(size = 14),
+        legend.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        legend.title.align = 0.5,
+        legend.text = element_text(face = "bold", size = 12))
+
+plotly_lockdown = ggplotly(gg_lockdown,
+                           height = 800, width = 1000) %>%
+  style(hoverlabel = label) %>%
+  layout(font = font,
+         yaxis = list(fixedrange = TRUE)) %>% 
+    config(displayModeBar = FALSE)
+
+plotly_lockdown
+```
+
+<br>
+<br>
+<br>
+
+### **Daily new cases**
+
+***
+
+<br>
+
+```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
+# CA STATE ROLLING MEAN GRAPH
+gg_ca_roll_mean = ggplot(data = ca_rolling, aes(x = date, y = new_cases)) +
+  geom_col(aes(y = new_cases), col = 'cornflowerblue', fill = 'cyan4', stat = 'identity') +
+  geom_line(aes(y = rolling_mean), col = 'darkblue', size = 1) +
+  labs(title = '7-day rolling mean',
        x = 'Date',
        y = 'New cases',
        subtitle = 'Data Source: The New York Times') +
-  facet_wrap(~state, scale = 'free_y') +
-  theme_economist() +
-  theme(aspect.ratio = .6) +
-  theme(axis.text.x = element_text(angle = 90, face = "bold"))
+  theme(axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(face = "bold", size = 16),
+        axis.title.y = element_text(face = "bold", size = 16, hjust = 0.5),
+        plot.title = element_text(face = 'bold', size = 20),
+        plot.subtitle = element_text(size = 14),
+        legend.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        legend.title.align = 0.5,
+        legend.text = element_text(face = "bold", size = 12))
 
+plot_ca_roll = ggplotly(gg_ca_roll_mean, height = 800, width = 1400) %>%
+  style(hoverlabel = label) %>%
+  layout(font = font,
+         yaxis = list(fixedrange = TRUE)) %>% 
+    config(displayModeBar = FALSE)
 
-dailyNewCases_ggplot
-
+plot_ca_roll
 ```
-***
 
 <br>
 <br>
 <br>
+<br>
+<br>
+<br>
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 2:** Daily new cases per capita in California, Florida, Louisiana, and New York. By looking at daily new cases on a per capita basis one can scale for population. Scaling for populations highlights that although California has many new cases, the number of new cases per capita is significantly lower when compared to the outbreaks occurring in Florida and Louisiana."}
-state1 = 'California'
-state2 = 'New York'
-state3 = 'Louisiana'
-state4 = 'Florida'
+### **County level**
 
-newCasesPerCap_4 = inner_join(pop, covid, by = 'fips') %>%
-  filter(state %in% c(state1, state2, state3, state4)) %>%
-  group_by(state, date) %>%
-  summarise(cases = sum(cases), pop2019 = sum(pop2019)) %>%
-  ungroup() %>%
-  group_by(state) %>%
-  mutate(new_cases = cases - lag(cases)) %>%
-  mutate(new_cases_per_capita = (new_cases / pop2019),
-         newCasesRollingMean = rollmean(new_cases_per_capita, 7, fill = NA, align = 'right'))
+*** 
 
+```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
+# COUNTY ROLLING MEAN PER CAPITA PLOT
+tmp2 = ca_covid %>% filter(new_cases >= 0) %>% rename('Rolling mean per capita' = rolling_mean_per_cap, County = county, Date = date)
 
-newCasesPerCap4_ggplot = ggplot(data = newCasesPerCap_4, aes(x = date, y = new_cases_per_capita)) +
-  geom_bar(aes(y = new_cases_per_capita), col = 'cyan4', fill = 'cornflowerblue', stat="identity") +
-  geom_line(aes(y = newCasesRollingMean), col = 'darkblue', size = 1) +
-  labs(title = paste('Daily new cases per capita in',state1, ',',state4, ',', state3, ',', state2),
+gg_county_rolling = ggplot(data = tmp2, aes(x= Date, y = `Rolling mean per capita`)) +
+  geom_line(aes(col = County), size = .5) +
+  scale_color_viridis_d(direction = -1) +
+  labs(title = '7-day rolling mean per capita',
        x = 'Date',
        y = 'New cases per capita',
+       col = 'County',
        subtitle = 'Data Source: The New York Times') +
-  facet_wrap(~state, scale = 'free_y') +
-  scale_y_continuous(name = "New cases per capita", labels = comma) +
-  theme_economist() +
-  theme(aspect.ratio = .6) +
-  theme(axis.text.x = element_text(angle = 90, face = "bold"))
+  theme(axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(face = "bold", size = 16),
+        axis.title.y = element_text(face = "bold", size = 16, hjust = 0.5),
+        plot.title = element_text(face = 'bold', size = 20),
+        plot.subtitle = element_text(size = 14),
+        legend.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        legend.title.align = 0.5,
+        legend.text = element_text(face = "bold", size = 12),
+        legend.position = "bottom")
+plot_county_rolling = ggplotly(gg_county_rolling, 
+                               height = 700, width = 1400,
+                               tooltip = c('y', 'County', 'x')) %>%
+  style(hoverlabel = label) %>%
+  layout(font = font,
+         yaxis = list(fixedrange = TRUE)) %>% 
+    config(displayModeBar = FALSE)
 
-
-newCasesPerCap4_ggplot
-
+plot_county_rolling
 
 ```
-***
 
 <br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### **Southern California**
+
+*** 
+
+```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
+# SO CAL ROLLING MEAN PER CAPITA PLOTS
+so_cal_counties = c('Los Angeles', 'Orange', 'San Diego', 'San Luis Obispo', 'Santa Barbara', 'Ventura')
+so_cal = ca_covid %>% filter(county %in% so_cal_counties)
+so_cal$county = factor(so_cal$county,levels=c('San Luis Obispo', 'Santa Barbara',
+                                               'Ventura', 'Los Angeles', 'Orange', 'San Diego'))
+
+gg_so_cal_roll_mean = ggplot(data = so_cal, aes(x = date, y = rolling_mean_per_cap)) +
+  geom_col(aes(y = rolling_mean_per_cap), col = 'cornflowerblue', fill = 'cyan4', stat = 'identity') +
+  geom_line(aes(y = rolling_mean_per_cap), col = 'darkblue', size = 0.5) +
+  labs(title = 'Daily new cases',
+       x = 'Date',
+       y = 'New cases',
+       subtitle = 'Data Source: The New York Times') +
+  theme(axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_text(face = "bold", size = 16),
+        axis.title.y = element_text(face = "bold", size = 16, hjust = 0.5),
+        plot.title = element_text(face = 'bold', size = 22),
+        plot.subtitle = element_text(size = 14),
+        legend.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        legend.title.align = 0.5,
+        legend.text = element_text(face = "bold", size = 12),
+        strip.text = element_text(face = 'bold', size=16)) +
+  facet_wrap(~county) +
+  scale_y_continuous(labels = scales::comma)
+# height = 1000, width = 1200,
+plot_so_cal_roll_mean = ggplotly(gg_so_cal_roll_mean, height = 1000, width = 1400) %>%
+  style(hoverlabel = label) %>%
+  layout(font = font, 
+         yaxis = list(fixedrange = TRUE)) %>% 
+    config(displayModeBar = FALSE)
+
+plot_so_cal_roll_mean
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

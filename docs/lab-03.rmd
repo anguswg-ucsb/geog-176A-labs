@@ -3,10 +3,20 @@ title: "US cities and borders:"
 author: "[Angus Watters](https://anguswg-ucsb.github.io/)"
 subtitle: 'Distance calculations and ggplots'
 output:
-  html_document:
-    theme: journal
+  mikedown::ucsb:
+    toc: TRUE
+    number_sections: FALSE
+    code_folding: "hide"
 ---
+<br>
+<br>
 
+## **Distances between US cities and borders**
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+library(rmarkdown)     # You need this library to run this template.
+library(mikedown) 
+```
 ```{r, message = FALSE, warning = FALSE}
 # Libraries
 library(tidyverse)
@@ -322,6 +332,9 @@ border_zone_ggplot = ggplot() +
 ***
 <br>
 
+### **Most populated US Cities**
+
+***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 1: Ten most populated cities in the US. An sf object was created from a dataframe containing all of the cities in the US. The ten most populated citiies were then extracted and plotted over an sf object of the continetal US sf object using ggplot."}
 
@@ -335,6 +348,9 @@ most_pop_cities_ggplot
 
 
 
+### **US Cities furthest from the international border**
+
+***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 2: US cities that are the furthest away from the international border. Distances were calculated by applying the st_distance() function on a Sf object containing all US cities and a unioned contentinal US sf object."}
 distance_to_border_ggplot
@@ -354,6 +370,11 @@ knitr::kable(cities_b_five_nogeom, caption = 'Cities furthest from US border', c
 <br>
 <br>
 
+
+### **US Cities furthest from a state border**
+
+***
+
 ```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 3: US cities that are the furthest away from a state border. Distances were calculated by applying the st_distance() function on a Sf object containing all US cities and the contentinal US sf object."}
 distance_to_states_ggplot
 
@@ -370,6 +391,11 @@ knitr::kable(cities_s_five_nogeom, caption = 'Cities furthest from a State borde
 
 <br>
 <br>
+
+
+### **US Cities equidistant from Mexico and Canada**
+
+***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 4: Highlighted US Cities which are equidistance between the Mexican and Candian borders. The cities which are equal distance between the Mexican and Canadian borders were calculated by taking the absolute difference between cities distances between the respective borders. Equidistant cities are highlighted by using the gghighlight function and the labeled cities are the five most populated cities in this region."}
 equidist_ggplot
@@ -395,6 +421,12 @@ knitr::kable(canada_cities_nogeom, caption = 'Cities furthest from Canadian bord
 
 <br>
 <br>
+
+
+### **US Cities within 160km of international border**
+
+***
+
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 5: US cities which are within 160km of the international border. There are 12,283 cities found in this region with a total population of ~260 million people which equates to ~65% of the total US population. The labeled cities represent the most populated city in each state within the border zone."}
 

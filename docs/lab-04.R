@@ -51,6 +51,7 @@ counties = us_counties() %>%
   st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
   st_transform(5070)
 
+class(counties)
 
 counties = counties %>%
   filter(!state_name %in% c('Puerto Rico', 'Alaska', 'Hawaii')) %>%
@@ -118,7 +119,8 @@ sq_grid = st_intersection(counties_u, sq_county)
 hex_grid = st_intersection(counties_u, hex_county)
 county_grid = st_intersection(counties_u, county_centroid)
 
-
+labs(caption = c((paste(nrow(near)), ' wells'),
+                 ('Buffer distance:', buff)) +
 # Step 1.6
 
 tess_plots = function(sf_data, name) {

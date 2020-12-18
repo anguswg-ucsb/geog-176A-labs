@@ -19,7 +19,7 @@ library(gifski)
 
 basin  = read_sf("https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-11119750/basin/")
 write_sf(basin, dsn = "data/USGS-11119750.gpkg")
-
+class(basin)
 # Elevation raster
 elev  = get_elev_raster(basin, z = 13) %>%
   crop(basin) %>%
