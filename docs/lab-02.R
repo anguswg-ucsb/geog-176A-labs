@@ -199,6 +199,46 @@ cases_capita_counties = covid %>%
   filter(new_cases_per_capita > 0.015)
 
 
+##########################################
+
+# message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 1:** Daily new cases in California, Florida, Louisiana, and New York. These four states were chosen to represent regional differences the spread of COVID-19. New York experienced huge daily case counts in March and April at the beginning stages of the Pandemic. However, by June in New York, the rate of new cases after the initial outbreak would decline precipitously. Southern and western states saw a delay in new cases as the virus took time to spread, however the result was a dramatic spike in new cases from June through August. The south and western states now appear to be on the tail end of this surge.
+#
+#
+# r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="**Figure 2:** Daily new cases per capita in California, Florida, Louisiana, and New York. By looking at daily new cases on a per capita basis one can scale for population. Scaling for populations highlights that although California has many new cases, the number of new cases per capita is significantly lower when compared to the outbreaks occurring in Florida and Louisiana."
+# state1 = 'California'
+# state2 = 'New York'
+# state3 = 'Louisiana'
+# state4 = 'Florida'
+#
+# newCasesPerCap_4 = inner_join(pop, covid, by = 'fips') %>%
+#   filter(state %in% c(state1, state2, state3, state4)) %>%
+#   group_by(state, date) %>%
+#   summarise(cases = sum(cases), pop2019 = sum(pop2019)) %>%
+#   ungroup() %>%
+#   group_by(state) %>%
+#   mutate(new_cases = cases - lag(cases)) %>%
+#   mutate(new_cases_per_capita = (new_cases / pop2019),
+#          newCasesRollingMean = rollmean(new_cases_per_capita, 7, fill = NA, align = 'right'))
+#
+#
+# newCasesPerCap4_ggplot = ggplot(data = newCasesPerCap_4, aes(x = date, y = new_cases_per_capita)) +
+#   geom_bar(aes(y = new_cases_per_capita), col = 'cyan4', fill = 'cornflowerblue', stat="identity") +
+#   geom_line(aes(y = newCasesRollingMean), col = 'darkblue', size = 1) +
+#   labs(title = paste('Daily new cases per capita in',state1, ',',state4, ',', state3, ',', state2),
+#        x = 'Date',
+#        y = 'New cases per capita',
+#        subtitle = 'Data Source: The New York Times') +
+#   facet_wrap(~state, scale = 'free_y') +
+#   scale_y_continuous(name = "New cases per capita", labels = comma) +
+#   theme_economist() +
+#   theme(aspect.ratio = .6) +
+#   theme(axis.text.x = element_text(angle = 90, face = "bold"))
+#
+#
+# newCasesPerCap4_ggplot
+
+###################################################
+
 # Question 3:
 library(sf)
 library(USAboundaries)

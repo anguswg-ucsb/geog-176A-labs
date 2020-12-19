@@ -181,6 +181,7 @@ gg_cases_per_100 = ggplot() +
                                  text = paste0('', cases_100k),
                                  text2 = county),
           col = 'black', size = .3) +
+  viridis::scale_fill_viridis(discrete = FALSE, option = "D") +
   labs(title = "Adjusted case rate",
        fill = 'Cases per 100,000 residents') +
     theme(axis.text.x = element_text(size = 16),
@@ -211,11 +212,11 @@ plotly_cases100k
 <br>
 
 ```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
-tmp1 = ca_spatial %>% mutate(status = case_when(cases_100k >= 7.0 ~ 'Widespread',
+tmp1 = ca_spatial %>% mutate(Tier = case_when(cases_100k >= 7.0 ~ 'Widespread',
                                                 7.0 > cases_100k & cases_100k >= 4.0 ~ 'Substantial',
                                                 3.9 > cases_100k & cases_100k >= 1.0 ~ 'Moderate',
                                                 1.0 > cases_100k ~ 'Minimal')) %>% 
-  mutate(status = as.factor(status))
+  mutate(Tier = as.factor(Tier))
 
 # RColorBrewer::display.brewer.all(n=4, exact.n=FALSE)
 # col3 = viridis::viridis_pal()
@@ -233,10 +234,8 @@ tmp1 = ca_spatial %>% mutate(status = case_when(cases_100k >= 7.0 ~ 'Widespread'
 
 gg_lockdown = ggplot() +
   geom_sf(data = shp) +
-  geom_sf(data = tmp1, aes(fill = status),
-                                 # text = paste0('', cases_100k),
-                                 # text2 = county),
-          col = 'black', size = .3) +
+  geom_sf(data = tmp1, aes(fill = Tier, text = paste0('County: ', county)), 
+                           col = 'black', size = .3) +
   viridis::scale_fill_viridis(discrete = TRUE, option = "D") +
   labs(fill = 'Tier',
        title = "County risk levels") +
@@ -252,6 +251,7 @@ gg_lockdown = ggplot() +
         legend.text = element_text(face = "bold", size = 12))
 
 plotly_lockdown = ggplotly(gg_lockdown,
+                           tooltip = c('Tier', 'text'),
                            height = 800, width = 1000) %>%
   style(hoverlabel = label) %>%
   layout(font = font,
