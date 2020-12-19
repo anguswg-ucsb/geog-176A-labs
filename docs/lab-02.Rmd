@@ -19,7 +19,7 @@ library(mikedown)
 
 ***
 
-# **COVID-19 Pandemic** 
+# **United States** 
 
 
 <br>
@@ -274,7 +274,9 @@ plotly_lockdown
 ```{r, message= FALSE, warning = FALSE, echo = FALSE, out.width = "100%"}
 # CA STATE ROLLING MEAN GRAPH
 gg_ca_roll_mean = ggplot(data = ca_rolling, aes(x = date, y = new_cases)) +
-  geom_col(aes(y = new_cases), col = 'cornflowerblue', fill = 'cyan4', stat = 'identity') +
+                                                # text = paste0('New cases: ', new_cases))) +
+  geom_bar(aes(y = new_cases, text = paste0('New cases: ', new_cases)),
+           col = 'cornflowerblue', fill = 'cyan4', stat = 'identity') +
   geom_line(aes(y = rolling_mean), col = 'darkblue', size = 1) +
   labs(title = '7-day rolling mean',
        x = 'Date',
@@ -290,7 +292,9 @@ gg_ca_roll_mean = ggplot(data = ca_rolling, aes(x = date, y = new_cases)) +
         legend.title.align = 0.5,
         legend.text = element_text(face = "bold", size = 12))
 
-plot_ca_roll = ggplotly(gg_ca_roll_mean, height = 800, width = 1400) %>%
+plot_ca_roll = ggplotly(gg_ca_roll_mean,
+                        tooltip = c('text'),
+                        height = 800, width = 1400) %>%
   style(hoverlabel = label) %>%
   layout(font = font,
          yaxis = list(fixedrange = TRUE)) %>% 
@@ -362,9 +366,11 @@ so_cal = ca_covid %>% filter(county %in% so_cal_counties)
 so_cal$county = factor(so_cal$county,levels=c('San Luis Obispo', 'Santa Barbara',
                                                'Ventura', 'Los Angeles', 'Orange', 'San Diego'))
 
-gg_so_cal_roll_mean = ggplot(data = so_cal, aes(x = date, y = rolling_mean_per_cap)) +
-  geom_col(aes(y = rolling_mean_per_cap), col = 'cornflowerblue', fill = 'cyan4', stat = 'identity') +
-  geom_line(aes(y = rolling_mean_per_cap), col = 'darkblue', size = 0.5) +
+gg_so_cal_roll_mean = ggplot(data = so_cal, aes(x = date, y = new_cases_per_cap)) +
+                                                # text = paste0('Rolling mean per capita:', new_cases_per_cap))) +
+  geom_bar(aes(y = new_cases_per_cap), col = 'cornflowerblue', fill = 'cyan4', stat = 'identity') +
+  geom_line(aes(y = rolling_mean_per_cap),
+                col = 'darkblue', size = 0.5) +
   labs(title = 'Daily new cases',
        x = 'Date',
        y = 'New cases',
@@ -382,7 +388,9 @@ gg_so_cal_roll_mean = ggplot(data = so_cal, aes(x = date, y = rolling_mean_per_c
   facet_wrap(~county) +
   scale_y_continuous(labels = scales::comma)
 # height = 1000, width = 1200,
-plot_so_cal_roll_mean = ggplotly(gg_so_cal_roll_mean, height = 1000, width = 1400) %>%
+plot_so_cal_roll_mean = ggplotly(gg_so_cal_roll_mean, 
+                                 # tooltip= c('y'),
+                                 height = 1000, width = 1400) %>%
   style(hoverlabel = label) %>%
   layout(font = font, 
          yaxis = list(fixedrange = TRUE)) %>% 
