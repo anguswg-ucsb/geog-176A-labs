@@ -1,0 +1,2 @@
+"entityId","acquisitionDate","cloudCover","processingLevel","path","row","min_lat","min_lon","max_lat","max_lon","download_url"
+"LC80370352017068LGN00",2017-03-09 18:02:59,0.3,"L1T",37,35,34.95901,-113.04101,37.08905,-110.44348,"https://s3-us-west-2.amazonaws.com/landsat-pds/L8/037/035/LC80370352017068LGN00/index.html"

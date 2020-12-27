@@ -12,6 +12,95 @@ library(getlandsat) # keyless Landsat data (2013-2017)
 library(sf)
 library(mapview)
 library(osmdata)
+library(elevatr)
+
+
+goleta = read_csv('data/uscities.csv') %>%
+  filter(city == 'Goleta') %>%
+  st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
+  st_transform(5070) %>%
+  st_buffer(5000) %>%
+  st_bbox() %>%
+  st_as_sfc() %>%
+  st_as_sf()
+
+class(goleta)
+isS4(goleta)
+elev = get_elev_raster(bb2, z = 13) %>% crop(bb2)
+
+plot(elev)
+
+elev2 = elev
+elev2[elev2 <= 0] = NA
+plot(elev2)
+
+func = function(i) {
+  ifelse(i <= 0, NA, 1)
+}
+
+elev3 = calc(elev, func)
+
+elev4 = elev3*elev
+
+hex = cellStats(elev2, fivenum)
+
+reclass = data.frame(c(-Inf,100,200, 300, 400, 500), seq(100,600,100), c(0:5))
+
+stac = stack(elev, elev3, elev4)
+
+elev5_plot = reclassify(elev4, reclass) %>%
+  plot(col = viridis::viridis(6))
+bb2 = read_csv('data/uscities.csv') %>%
+  filter(city == 'Grand Canyon Village') %>%
+  st_as_sf(coords = c('lng', 'lat'), crs = 4326) %>%
+  st_transform(5070) %>%
+  st_buffer(10000) %>%
+  st_bbox() %>%
+  st_as_sfc() %>%
+  st_as_sf()
+
+scenes2 = lsat_scenes()
+
+bb_wgs2 = st_transform(bb2, 4326) %>%  st_bbox()
+
+down2 = scenes2 %>%
+  filter(min_lat <= bb_wgs2$ymin, max_lat >= bb_wgs2$ymax, min_lon <= bb_wgs2$xmin,
+         max_lon >= bb_wgs2$xmax,
+         as.Date(acquisitionDate) == as.Date('2017-03-09'))
+
+write.csv(down2, file = 'data/grand-canyon.csv', row.names = FALSE)
+
+#### IN RMD
+# Step 2
+meta2 = read_csv('data/grand-canyon.csv')
+
+files2 = lsat_scene_files(meta2$download_url) %>%
+  filter(grepl(paste0('B', 1:6, '.TIF$', collapse = '|'), file)) %>%
+  arrange(file) %>%
+  pull(file)
+
+# Step 3
+st2 = sapply(files2, lsat_image)
+s2 = stack(st2) %>%
+  setNames(c('Coastal', 'Blue', 'Green', 'Red', 'NIR', 'SWIR1'))
+## What are the dimensions of your stacked image? What is the CRS? What is the cell resolution?
+## The stacked image has dimensions of 7811 rows, 7681 columns, 59996291 cells, and 6 layers.
+## The CRS of the image stack is +proj=utm +zone=15 +datum=WGS84 +units=m +no_defs
+## The cell resolution of the image stack is x = 30 and y = 30.
+
+# Step 4
+cropper2 = bb2 %>% st_as_sf() %>%
+  st_transform(crs(s2))
+r2 = crop(s2, cropper2)
+
+
+# Step 1
+nat_col = plotRGB(r2, r = 4, g = 3, b = 2)
+inf_NIR = plotRGB(r2, r = 5, g = 4, b = 3, stretch = 'lin')
+false_SWIR = plotRGB(r2, r = 5, g = 6, b = 4, stretch = 'hist')
+false_agr = plotRGB(r2, r = 6, g = 5, b = 2, stretch = 'hist')
+
+
 
 # Question 1:
 bb = read_csv('data/uscities.csv') %>%

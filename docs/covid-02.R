@@ -66,7 +66,7 @@ ca_rolling = covid_tmp %>%
   group_by(state) %>%
   mutate(new_cases = cases - lag(cases),
          rolling_mean = rollmean(new_cases, 7, fill = NA, align = 'right'))
-  # filter(new_cases >= 0)
+# filter(new_cases >= 0)
 #
 # roll_mean_daily = roll_mean %>%
 #   arrange(desc(date)) %>%
@@ -178,7 +178,7 @@ plot_county_rolling = ggplotly(gg_county_rolling) %>%
 so_cal_counties = c('Los Angeles', 'Orange', 'San Diego', 'San Luis Obispo', 'Santa Barbara', 'Ventura')
 so_cal = ca_covid %>% filter(county %in% so_cal_counties)
 so_cal$county = factor(so_cal$county,levels=c('San Luis Obispo', 'Santa Barbara',
-                                               'Ventura', 'Los Angeles', 'Orange', 'San Diego'))
+                                              'Ventura', 'Los Angeles', 'Orange', 'San Diego'))
 
 gg_so_cal_roll_mean = ggplot(data = so_cal, aes(x = date, y = rolling_mean_per_cap)) +
   geom_col(aes(y = rolling_mean_per_cap), col = 'aquamarine4', fill = 'aquamarine3') +
@@ -259,13 +259,13 @@ tmp1 = ca_spatial %>% mutate(status = case_when(cases_100k >= 7.0 ~ 'Widespread'
                                                 7.0 > cases_100k & cases_100k >= 4.0 ~ 'Substantial',
                                                 3.9 > cases_100k & cases_100k >= 1.0 ~ 'Moderate',
                                                 1.0 > cases_100k ~ 'Minimal'))
-                                                # cases_100k >= 7.0 ~ 'Widespread',
-                                                # cases_100k >= 7.0 ~ 'Widespread'))
+# cases_100k >= 7.0 ~ 'Widespread',
+# cases_100k >= 7.0 ~ 'Widespread'))
 gg_lockdown = ggplot() +
   geom_sf(data = shp) +
   geom_sf(data = tmp1, aes(fill = status),
-                                 # text = paste0('', cases_100k),
-                                 # text2 = county),
+          # text = paste0('', cases_100k),
+          # text2 = county),
           col = 'black', size = .3) +
   labs(fill = 'Risk level',
        title = "California's county risk levels") +
@@ -299,12 +299,4 @@ ggplot() +
 
 ####################################################################################
 ####################################################################################
-
-
-
-
-
-
-
-
 

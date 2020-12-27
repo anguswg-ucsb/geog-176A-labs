@@ -27,6 +27,7 @@ library(rnaturalearth)
 library(gghighlight)
 library(ggrepel)
 library(knitr)
+library(plotly)
 ```
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 # 1.1 Define a Projection
@@ -174,7 +175,14 @@ canada_cities = cities %>%
   head(5)
 ```
 
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
+***
+<br>
+
+### **Most populated US Cities**
+
+***
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 1: Ten most populated cities in the US. An sf object was created from a dataframe containing all of the cities in the US. The ten most populated citiies were then extracted and plotted over an sf object of the continetal US sf object using ggplot."}
 # Question 3:
 
 # 3.1 Data
@@ -188,16 +196,24 @@ big_cities = cities %>%
 # ggplot of ten most populated cities in US
 most_pop_cities_ggplot = ggplot() +
   geom_sf(data = conus, fill = 'cornflowerblue', alpha = .5, size = .5) +
-  geom_sf(data = mexico, lty = 1) +
-  geom_sf(data = canada, lty = 1) +
   geom_sf(data = big_cities, aes(city, state_name), col = 'black', size = 3) +
   geom_label_repel(data = big_cities, aes(geometry = geometry, label = city), stat = 'sf_coordinates') +
   labs(title = 'Ten most populated US cities',
        x = 'Longitude',
        y = 'Latitude')
+pop_plot = plotly::ggplotly(most_pop_cities_ggplot)
+pop_plot
+```
+
+<br>
+<br>
 
 
 
+### **US Cities furthest from the international border**
+
+***
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 2: US cities that are the furthest away from the international border. Distances were calculated by applying the st_distance() function on a Sf object containing all US cities and a unioned contentinal US sf object."}
 # 3.2 City Distance from the Border
 
 # ggplot of cities distance from border
@@ -212,8 +228,25 @@ distance_to_border_ggplot = ggplot() +
        y = 'Latitude',
        color = 'Distance (km)',
        subtitle = '5 citiest furthest from the border')
+dist_border_plot = plotly::ggplotly(distance_to_border_ggplot)
+dist_border_plot
+```
+
+***
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+
+knitr::kable(cities_b_five_nogeom, caption = 'Cities furthest from US border', col.names = c('City', 'State', 'Distance to border'))
 
 
+```
+
+<br>
+<br>
+
+### **US Cities furthest from a state border**
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 3: US cities that are the furthest away from a state border. Distances were calculated by applying the st_distance() function on a Sf object containing all US cities and the contentinal US sf object."}
 # 3.3 City Distance from Nearest State
 
 # ggplot of cities distance from state border
@@ -221,7 +254,6 @@ distance_to_states_ggplot = ggplot() +
   geom_sf(data = conus_c) +
   geom_sf(data = cities_s, aes(col = dist_state), size = .1) +
   scale_color_gradient(low = 'orange', high = 'darkred') +
-  geom_sf(data = cities_s_five, aes(city, state_name), col = 'black', size = 2) +
   geom_label_repel(data = cities_s_five, aes(geometry = geometry, label = city), stat = 'sf_coordinates') +
   labs(title = 'US cities distances from state border',
        x = 'Longitude',
@@ -229,7 +261,18 @@ distance_to_states_ggplot = ggplot() +
        color = 'Distance (km)',
        subtitle = '5 cities furthest from state border')
 
+dist_plot = plotly::ggplotly(distance_to_states_ggplot)
+dist_plot
+```
 
+<br>
+<br>
+
+### **US Cities equidistant from Mexico and Canada**
+
+***
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 4: Highlighted US Cities which are equidistance between the Mexican and Candian borders. The cities which are equal distance between the Mexican and Canadian borders were calculated by taking the absolute difference between cities distances between the respective borders. Equidistant cities are highlighted by using the gghighlight function and the labeled cities are the five most populated cities in this region."}
 # 3.4 Equidistance boundary from Mexico and Canada
 
 eqd_cities = cities %>%
@@ -256,21 +299,42 @@ equidist_ggplot = ggplot() +
        y = 'Latitude',
        subtitle = '5 most populous equidistant cities') 
 
+equi_plot = plotly::ggplotly(equidist_ggplot)
+equi_plot
+```
+
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+
+knitr::kable(mex_cities_nogeom, caption = 'Cities furthest from Mexican border', col.names = c('City', 'State', 'Distance to Mexico border'))
+```
+
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+knitr::kable(canada_cities_nogeom, caption = 'Cities furthest from Canadian border', col.names = c('City', 'State', 'Distance to Canada border'))
+```
+
+<br> 
+<br>
+
+
+### **US Cities within 160km of international border**
+
+***
+
+<br>
+<br>
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 5: US cities which are within 160km of the international border. There are 12,283 cities found in this region with a total population of ~260 million people which equates to ~65% of the total US population. The labeled cities represent the most populated city in each state within the border zone."}
 # Question 4:
 
 # 4.1 Quantifing Border Zone
 
-
 # table of number cities in border zone, border pop, percentage total pop
-border_zone_stats = cities %>%
-  st_drop_geometry() %>%
-  mutate(total_pop = sum(population)) %>%
-  mutate(cities_zone = st_distance(cities, conus_u), cities_zone = set_units(cities_zone, 'km'), cities_zone = drop_units(cities_zone)) %>%
-  filter(cities_zone <= 160) %>%
-  summarise(border_pop = sum(population), border_pop_percentage = (border_pop/total_pop)*100, num_cities = n()) %>%
-  head(1)
-
-
 
 #cities within 160 km of border
 border_zone = cities %>%
@@ -314,133 +378,32 @@ border_zone = cities %>%
 
 
 # ggplot of cities in border zone
-border_zone_ggplot = ggplot() +
+
+gg1 = ggplot() +
   geom_sf(data = conus_c) +
-  geom_sf(data = cities, col = 'grey', size = .1) +
   geom_sf(data = border_zone, aes(col = dist_to_border), size = .5) +
   gghighlight(dist_to_border <= 160) +
   scale_color_gradient(low = 'orange', high = 'darkred') +
-  geom_sf(data = most_pop_states, aes(city, state_name), col = 'black', size = 3) +
-  geom_label_repel(data = most_pop_states, aes(geometry = geometry, label = city), stat = 'sf_coordinates') +
   labs(title = 'US cities within 160 km of the US border',
        x = 'Longitude',
        y = 'Latitude',
        color = 'Distance (km)',
-       subtitle = 'Most populated city in each state within the border zone')
-```
-
-***
-<br>
-
-### **Most populated US Cities**
-
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 1: Ten most populated cities in the US. An sf object was created from a dataframe containing all of the cities in the US. The ten most populated citiies were then extracted and plotted over an sf object of the continetal US sf object using ggplot."}
-
-most_pop_cities_ggplot
-
-```
-
-***
-<br>
-<br>
+       subtitle = 'Most populated city in each state within the border zone') +
+  theme(aspect.ratio = .5)
 
 
-
-### **US Cities furthest from the international border**
-
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 2: US cities that are the furthest away from the international border. Distances were calculated by applying the st_distance() function on a Sf object containing all US cities and a unioned contentinal US sf object."}
-distance_to_border_ggplot
-
-
-```
-
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-
-knitr::kable(cities_b_five_nogeom, caption = 'Cities furthest from US border', col.names = c('City', 'State', 'Distance to border'))
-
-
+border_plot = plotly::ggplotly(gg1)
+border_plot
 ```
 
 <br>
 <br>
 
-
-### **US Cities furthest from a state border**
-
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 3: US cities that are the furthest away from a state border. Distances were calculated by applying the st_distance() function on a Sf object containing all US cities and the contentinal US sf object."}
-distance_to_states_ggplot
-
-```
-
-***
-
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-
-knitr::kable(cities_s_five_nogeom, caption = 'Cities furthest from a State border', col.names = c('City', 'State', 'Distance to state border'))
-
-```
-
-<br>
-<br>
-
-
-### **US Cities equidistant from Mexico and Canada**
-
-***
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 4: Highlighted US Cities which are equidistance between the Mexican and Candian borders. The cities which are equal distance between the Mexican and Canadian borders were calculated by taking the absolute difference between cities distances between the respective borders. Equidistant cities are highlighted by using the gghighlight function and the labeled cities are the five most populated cities in this region."}
-equidist_ggplot
-
-```
-
-***
-<br>
-<br>
-
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-
-knitr::kable(mex_cities_nogeom, caption = 'Cities furthest from Mexican border', col.names = c('City', 'State', 'Distance to Mexico border'))
-```
-
-<br>
-<br>
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE}
-knitr::kable(canada_cities_nogeom, caption = 'Cities furthest from Canadian border', col.names = c('City', 'State', 'Distance to Canada border'))
-```
-
-<br>
-<br>
-
-
-### **US Cities within 160km of international border**
-
-***
-
-
-```{r, message = FALSE, warning = FALSE, echo = FALSE, fig.align="center", fig.width=10, fig.height=8, fig.cap="Figure 5: US cities which are within 160km of the international border. There are 12,283 cities found in this region with a total population of ~260 million people which equates to ~65% of the total US population. The labeled cities represent the most populated city in each state within the border zone."}
-
-border_zone_ggplot
-
-```
-
-***
 
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 knitr::kable(border_zone_stats, caption = 'States within 160 km of US Border', col.names = c('Border zone population', 'Percent of total US population', 'Number of cities'))
-
 ```
 
-<br>
-<br>
-<br>
+
+
+
